@@ -1,4 +1,4 @@
-package cz.cuni.mff.releasedownloader;
+package cz.cuni.mff.releasemanager;
 
 public class Main {
     public static void main(String[] args) {
