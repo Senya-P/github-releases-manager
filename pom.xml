@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>cz.cuni.mff.releasemanager</groupId>
-    <artifactId>github-release-manager</artifactId>
+    <artifactId>github-releases-manager</artifactId>
     <version>1.0-SNAPSHOT</version>
 
     <properties>

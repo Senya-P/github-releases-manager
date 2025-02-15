@@ -1,7 +1,16 @@
 package cz.cuni.mff.releasemanager;
 
-public class Main {
+public class Main { // extends Runnable
     public static void main(String[] args) {
-        System.out.println("Hello world!");
+        ReleaseManager releaseManager = ReleaseManager.getInstance();
+        releaseManager.execute(args);
     }
 }
+
+/*
+ * blocking cmd iface?
+ * multi-thread
+ * version control: json?
+ * resource bundle
+ * 
+ */
