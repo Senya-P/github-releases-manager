@@ -1,4 +1,8 @@
 # Compiled class file
+releases/
+target/
+
+# Compiled class file
 *.class
 
 # Log file
