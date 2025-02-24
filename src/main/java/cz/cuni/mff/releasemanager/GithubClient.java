@@ -2,7 +2,6 @@ package cz.cuni.mff.releasemanager;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -21,8 +20,11 @@ public class GithubClient {
     private final PlatformHandler platformHandler;
 
     public GithubClient() {
-        client = HttpClient.newHttpClient();
-        platformHandler = new WindowsHandler(); // REWRITE
+        client = HttpClient.newBuilder()
+            .followRedirects(HttpClient.Redirect.ALWAYS)
+            .version(HttpClient.Version.HTTP_2)
+            .build();
+        platformHandler = new LinuxHandler(); // REWRITE
     }
 
     public boolean getLatestRelease(String owner, String repo) {
@@ -44,10 +46,13 @@ public class GithubClient {
             // parse response
             // get correct asset id for corresponding platform
             // String assetId = getAssetId(response.body());
-            platformHandler.resolveExtension(null);
-            final String assetName = "keepassxc-2.7.9-src.tar.xz";
-            final Path assetPath = saveInputStreamToFile(getAsset(owner, repo, "174789063"), assetName);
-            platformHandler.install(assetPath);
+            
+            final String assetName = "KeePassXC-2.7.9-x86_64.AppImage";
+            //platformHandler.verifyFormat(assetName);
+            final Path assetPath = saveInputStreamToFile(getAsset(owner, repo, "174789080"), assetName);
+            final Path dir = createDirectory("dest");
+            Path destination = dir.resolve(assetName.split("\\.")[0]);
+            platformHandler.install(assetPath, destination);
         } catch (IOException | InterruptedException ex) {
             return false;
         }
@@ -64,7 +69,13 @@ public class GithubClient {
             .uri(URI.create(API_URL + owner + "/" + repo + "/releases/assets/" + assetId))
             .header("Accept", ACCEPT_STREAM_HEADER)
             .build();
-        return client.send(request, BodyHandlers.ofInputStream()).body();
+        HttpResponse<InputStream> response = client.send(
+            request, 
+            HttpResponse.BodyHandlers.ofInputStream()
+        );
+
+        handleResponseCode(response);
+        return response.body();
     }
 
     private void handleResponseCode(HttpResponse<InputStream> response) throws IOException {
@@ -86,14 +97,16 @@ public class GithubClient {
         Path dir;
         try {
             dir = createDirectory("releases");
-            Path destination = dir.resolve(filename);
-            OutputStream out = Files.newOutputStream(destination);
-            stream.transferTo(out);
-            return destination;
         } catch (IOException ex) {
-            ex.printStackTrace();
             return null;
         }
+        Path destination = dir.resolve(filename);
+        try {
+            Files.copy(stream, destination);
+        } catch (IOException e) {
+            return null;
+        }
+        return destination;
     }
 
     private Path createDirectory(String directoryName) throws IOException {

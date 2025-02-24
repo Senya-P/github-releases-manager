@@ -1,6 +1,7 @@
 # Compiled class file
 releases/
 target/
+.vscode/
 
 # Compiled class file
 *.class

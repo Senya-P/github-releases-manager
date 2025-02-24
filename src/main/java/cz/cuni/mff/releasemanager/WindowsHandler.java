@@ -5,18 +5,18 @@ import java.nio.file.Path;
 public class WindowsHandler implements PlatformHandler {
 
     @Override
-    public void install(Path assePath) {
+    public void install(Path asset, Path destination) {
         
     }
 
     @Override
-    public void extract(Path assePath) {
+    public void extract(Path asset, Path destination) {
         
     }
 
     @Override
-    public void resolveExtension(String[] extensions) {
-      
+    public boolean verifyFormat(Path file) {
+      return false;
     }
 
 }

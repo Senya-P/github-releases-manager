@@ -7,6 +7,9 @@ public class Main { // extends Runnable
 
         GithubClient githubClient = new GithubClient();
         githubClient.getLatestRelease("keepassxreboot", "keepassxc");
+
+        // LinuxHandler lh = new LinuxHandler();
+        // lh.extract(Paths.get("/home/senya/Documents/code/github-releases-manager/releases/keepassxc-2.7.9-src.tar.xz"), Paths.get("/home/senya/Documents/code/github-releases-manager/releases/dest"));
     }
 }
 
