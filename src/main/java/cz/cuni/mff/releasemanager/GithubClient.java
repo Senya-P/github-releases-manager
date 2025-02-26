@@ -10,6 +10,10 @@ import java.net.http.HttpResponse.BodyHandlers;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class GithubClient {
 
@@ -23,8 +27,9 @@ public class GithubClient {
         client = HttpClient.newBuilder()
             .followRedirects(HttpClient.Redirect.ALWAYS)
             .version(HttpClient.Version.HTTP_2)
+            .connectTimeout(java.time.Duration.ofSeconds(30))
             .build();
-        platformHandler = new LinuxHandler(); // REWRITE
+        platformHandler = Platform.getPlatformHandler();
     }
 
     public boolean getLatestRelease(String owner, String repo) {
@@ -40,33 +45,26 @@ public class GithubClient {
         HttpResponse<InputStream> response;
         try {
             response = client.send(request, BodyHandlers.ofInputStream());
-            String jsonResponse = new String(response.body().readAllBytes());
-            System.out.println(jsonResponse);
             handleResponseCode(response);
-            // parse response
-            // get correct asset id for corresponding platform
-            // String assetId = getAssetId(response.body());
-            
-            final String assetName = "KeePassXC-2.7.9-x86_64.AppImage";
-            //platformHandler.verifyFormat(assetName);
-            final Path assetPath = saveInputStreamToFile(getAsset(owner, repo, "174789080"), assetName);
-            final Path dir = createDirectory("dest");
-            Path destination = dir.resolve(assetName.split("\\.")[0]);
-            platformHandler.install(assetPath, destination);
+            String jsonResponse = new String(response.body().readAllBytes());
+
+            Asset asset = findAppImageAsset(jsonResponse);
+            //Files.write(Paths.get("output"), jsonResponse.getBytes(), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+            platformHandler.verifyFormat(asset.name);
+
+            final Path assetPath = saveInputStreamToFile(getAsset(asset.url), asset.name);
+            platformHandler.install(assetPath);
         } catch (IOException | InterruptedException ex) {
+            System.out.println(ex.getMessage());
             return false;
         }
 
         return true;
     }
-    // https://github.com/keepassxreboot/keepassxc/releases/download/2.7.9/KeePassXC-2.7.9-Win64-LegacyWindows.zip
-    // 
-    // 174789063
-    // https://github.com/keepassxreboot/keepassxc/releases/download/2.7.9/keepassxc-2.7.9-src.tar.xz
 
-    private InputStream getAsset(String owner, String repo, String assetId) throws IOException, InterruptedException {
+    private InputStream getAsset(String url) throws IOException, InterruptedException {
         HttpRequest request = HttpRequest.newBuilder()
-            .uri(URI.create(API_URL + owner + "/" + repo + "/releases/assets/" + assetId))
+            .uri(URI.create(url))
             .header("Accept", ACCEPT_STREAM_HEADER)
             .build();
         HttpResponse<InputStream> response = client.send(
@@ -93,7 +91,6 @@ public class GithubClient {
     }
 
     private Path saveInputStreamToFile(InputStream stream, String filename) {
-        // Save the InputStream to a file
         Path dir;
         try {
             dir = createDirectory("releases");
@@ -116,5 +113,28 @@ public class GithubClient {
         }
         return path;
     }
+
+    private static Asset findAppImageAsset(String json) throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        Release release = mapper.readValue(json, Release.class);
+        Asset asset = release.assets().stream()
+            .filter(a -> a.name().toLowerCase().contains(".appimage"))
+            .findFirst()
+            .orElseThrow(() -> new RuntimeException("No AppImage asset found"));
+        return asset;
+    }
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public record Release(
+        String url,
+        String name,
+        List<Asset> assets
+    ) {}
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public record Asset(
+        String url,
+        String name
+    ) {}
 
 }

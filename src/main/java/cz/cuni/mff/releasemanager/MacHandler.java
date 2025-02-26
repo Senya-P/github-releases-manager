@@ -5,18 +5,17 @@ import java.nio.file.Path;
 public class MacHandler implements PlatformHandler {
 
     @Override
-    public void install(Path asset, Path destination) {
+    public void install(Path asset) {
+    }
+
+    @Override
+    public void extract(Path asset) {
         
     }
 
     @Override
-    public void extract(Path asset, Path destination) {
-        
-    }
-
-    @Override
-    public boolean verifyFormat(Path file) {
-        return false;
+    public boolean verifyFormat(String fileName) {
+        return fileName.toLowerCase().endsWith(".dmg");
     }
 
 }
