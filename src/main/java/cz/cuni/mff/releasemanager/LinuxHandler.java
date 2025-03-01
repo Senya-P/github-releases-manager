@@ -9,6 +9,8 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
@@ -19,7 +21,6 @@ public class LinuxHandler implements PlatformHandler {
     @Override
     public void install(Path asset) {
         try {
-            // Set executable permissions
             Files.setPosixFilePermissions(asset, Set.of(
                 PosixFilePermission.OWNER_READ,
                 PosixFilePermission.OWNER_WRITE,
@@ -33,8 +34,8 @@ public class LinuxHandler implements PlatformHandler {
             // install for user
             Path targetDir = Paths.get(System.getProperty("user.home"), ".local/bin");
             Files.createDirectories(targetDir);
-
-            Path target = targetDir.resolve(asset.getFileName());
+            Path shortCut = getShortCut(asset.getFileName());
+            Path target = targetDir.resolve(shortCut);
             Files.move(asset, target, StandardCopyOption.REPLACE_EXISTING);
             // system-wide? -> sudo
             // entry in PATH
@@ -43,6 +44,15 @@ public class LinuxHandler implements PlatformHandler {
         } catch (IOException e) {
             System.out.println("AppImage installation failed");
         }
+    }
+
+    private Path getShortCut(Path asset) {
+        String fileName = asset.toString();
+        Pattern pattern = Pattern.compile("^[A-Za-z]+");
+        Matcher matcher = pattern.matcher(fileName);
+
+        String shortCut = matcher.find() ? matcher.group().toLowerCase() : "";
+        return Paths.get(shortCut);
     }
 
     @Override
