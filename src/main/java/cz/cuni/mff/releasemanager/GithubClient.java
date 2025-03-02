@@ -6,20 +6,22 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.net.http.HttpResponse.BodyHandlers;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.List;
+import java.util.Optional;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import cz.cuni.mff.releasemanager.types.Asset;
+import cz.cuni.mff.releasemanager.types.Release;
+import cz.cuni.mff.releasemanager.types.Repo;
+import cz.cuni.mff.releasemanager.types.SearchResult;
 
 public class GithubClient {
 
-    private static final String API_URL = "https://api.github.com/repos/";
+    private static final String API_URL = "https://api.github.com";
     private static final String ACCEPT_JSON_HEADER = "application/vnd.github.v3+json";
     private static final String ACCEPT_STREAM_HEADER = "application/octet-stream";
+    private static final String RESULT_COUNT = "5";
     private final HttpClient client;
     private final PlatformHandler platformHandler;
 
@@ -32,27 +34,44 @@ public class GithubClient {
         platformHandler = Platform.getPlatformHandler();
     }
 
+    public void searchRepoByName(String name) {
+        String url = API_URL + "/search/repositories?q=" + name + "&per_page=" + RESULT_COUNT;
+        try {
+            String jsonResponse = request(URI.create(url));
+            // extract list? of owner - repo
+            SearchResult searchResult = getSearchResult(jsonResponse);
+            for (Repo repo : searchResult.items()) {
+                String owner = repo.fullName().split("/")[0];
+                String repoName = repo.fullName().split("/")[1];
+                System.out.println(owner + " " + repoName);
+                getLatestRelease(owner, repoName);
+            }
+
+            //Files.write(Paths.get("output-search"), jsonResponse.getBytes(), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+        } catch (IOException | InterruptedException ex) {
+            System.out.println(ex.getMessage());
+        }
+    }
+
     public boolean getLatestRelease(String owner, String repo) {
         // get release
         // determine platform
         // extract asset id
         // request asset
         // download asset
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(API_URL + owner + "/" + repo + "/releases/latest"))
-                .header("Accept", ACCEPT_JSON_HEADER)
-                .build();
-        HttpResponse<InputStream> response;
+        //Files.write(Paths.get("output"), jsonResponse.getBytes(), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+
+        String url = API_URL + "/repos/" + owner + "/" + repo + "/releases/latest";
         try {
-            response = client.send(request, BodyHandlers.ofInputStream());
-            handleResponseCode(response);
-            String jsonResponse = new String(response.body().readAllBytes());
-
-            Asset asset = findAppImageAsset(jsonResponse);
-            //Files.write(Paths.get("output"), jsonResponse.getBytes(), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
-            platformHandler.verifyFormat(asset.name);
-
-            final Path assetPath = saveInputStreamToFile(getAsset(asset.url), asset.name);
+            String jsonResponse = request(URI.create(url));
+            var result = findAppImageAsset(jsonResponse);
+            if (!result.isPresent()) {
+                return false;
+            }
+            Asset asset = result.get();
+            InputStream assetStream = getAsset(asset.url());
+            final Path assetPath = platformHandler.saveInputStreamToFile(assetStream, asset.name()); //
+            //platformHandler.verifyFormat(assetPath); //
             platformHandler.install(assetPath);
         } catch (IOException | InterruptedException ex) {
             System.out.println(ex.getMessage());
@@ -62,13 +81,27 @@ public class GithubClient {
         return true;
     }
 
-    private InputStream getAsset(String url) throws IOException, InterruptedException {
+    private String request(URI uri) throws IOException, InterruptedException {
+        HttpRequest request = HttpRequest.newBuilder()
+            .uri(uri)
+            .header("Accept", ACCEPT_JSON_HEADER)
+            .build();
+        HttpResponse<InputStream> response = client.send(
+            request,
+            HttpResponse.BodyHandlers.ofInputStream()
+        );
+
+        handleResponseCode(response);
+        return new String(response.body().readAllBytes());
+    }
+
+    InputStream getAsset(String url) throws IOException, InterruptedException {
         HttpRequest request = HttpRequest.newBuilder()
             .uri(URI.create(url))
             .header("Accept", ACCEPT_STREAM_HEADER)
             .build();
         HttpResponse<InputStream> response = client.send(
-            request, 
+            request,
             HttpResponse.BodyHandlers.ofInputStream()
         );
 
@@ -76,7 +109,7 @@ public class GithubClient {
         return response.body();
     }
 
-    private void handleResponseCode(HttpResponse<InputStream> response) throws IOException {
+    private boolean handleResponseCode(HttpResponse<InputStream> response) throws IOException {
         int statusCode = response.statusCode();
         if (statusCode >= 400) {
             // switch (statusCode) {
@@ -87,54 +120,22 @@ public class GithubClient {
             //         "HTTP Error " + statusCode + ": " + errorBody
             //     );
             // }
+            return false;
         }
+        return true;
     }
 
-    private Path saveInputStreamToFile(InputStream stream, String filename) {
-        Path dir;
-        try {
-            dir = createDirectory("releases");
-        } catch (IOException ex) {
-            return null;
-        }
-        Path destination = dir.resolve(filename);
-        try {
-            Files.copy(stream, destination);
-        } catch (IOException e) {
-            return null;
-        }
-        return destination;
-    }
-
-    private Path createDirectory(String directoryName) throws IOException {
-        Path path = Paths.get(directoryName);
-        if (!Files.exists(path)) {
-            Files.createDirectories(path);
-        }
-        return path;
-    }
-
-    private static Asset findAppImageAsset(String json) throws IOException {
+    private Optional<Asset> findAppImageAsset(String json) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
         Release release = mapper.readValue(json, Release.class);
-        Asset asset = release.assets().stream()
-            .filter(a -> a.name().toLowerCase().contains(".appimage"))
-            .findFirst()
-            .orElseThrow(() -> new RuntimeException("No AppImage asset found"));
+        Optional<Asset> asset = release.assets().stream()
+            .filter(a -> a.name().toLowerCase().contains(".appimage")) // platform-specific
+            .findFirst();
         return asset;
     }
 
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    public record Release(
-        String url,
-        String name,
-        List<Asset> assets
-    ) {}
-
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    public record Asset(
-        String url,
-        String name
-    ) {}
-
+    private SearchResult getSearchResult(String json) throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.readValue(json, SearchResult.class);
+    }
 }
