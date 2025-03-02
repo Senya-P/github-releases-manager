@@ -2,7 +2,7 @@ package cz.cuni.mff.releasemanager;
 
 import java.nio.file.Path;
 
-public class WindowsHandler implements PlatformHandler {
+public class WindowsHandler extends PlatformHandler {
 
     @Override
     public void install(Path asset) {
@@ -15,8 +15,8 @@ public class WindowsHandler implements PlatformHandler {
     }
 
     @Override
-    public boolean verifyFormat(String fileName) {
-        return fileName.toLowerCase().endsWith(".msi");
+    public boolean verifyFormat(Path asset) {
+        return asset.toString().toLowerCase().endsWith(".msi");
     }
 
 }

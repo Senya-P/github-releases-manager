@@ -2,7 +2,7 @@ package cz.cuni.mff.releasemanager;
 
 import java.nio.file.Path;
 
-public class MacHandler implements PlatformHandler {
+public class MacHandler extends PlatformHandler {
 
     @Override
     public void install(Path asset) {
@@ -14,8 +14,8 @@ public class MacHandler implements PlatformHandler {
     }
 
     @Override
-    public boolean verifyFormat(String fileName) {
-        return fileName.toLowerCase().endsWith(".dmg");
+    public boolean verifyFormat(Path asset) {
+        return asset.toString().toLowerCase().endsWith(".dmg");
     }
 
 }

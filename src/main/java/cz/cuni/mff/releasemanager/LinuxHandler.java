@@ -9,19 +9,17 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.tukaani.xz.XZInputStream;
 
-public class LinuxHandler implements PlatformHandler {
+public class LinuxHandler extends PlatformHandler {
 
     @Override
-    public void install(Path asset) {
+    public void install(Path assetPath) {
         try {
-            Files.setPosixFilePermissions(asset, Set.of(
+            Files.setPosixFilePermissions(assetPath, Set.of(
                 PosixFilePermission.OWNER_READ,
                 PosixFilePermission.OWNER_WRITE,
                 PosixFilePermission.OWNER_EXECUTE,
@@ -34,26 +32,19 @@ public class LinuxHandler implements PlatformHandler {
             // install for user
             Path targetDir = Paths.get(System.getProperty("user.home"), ".local/bin");
             Files.createDirectories(targetDir);
-            Path shortCut = getShortCut(asset.getFileName());
+            Path shortCut = getShortCut(assetPath);
             Path target = targetDir.resolve(shortCut);
-            Files.move(asset, target, StandardCopyOption.REPLACE_EXISTING);
+            Files.move(assetPath, target, StandardCopyOption.REPLACE_EXISTING);
             // system-wide? -> sudo
             // entry in PATH
             System.out.println("AppImage installed to: " + target);
+            removeTempDir(assetPath);
 
         } catch (IOException e) {
             System.out.println("AppImage installation failed");
         }
     }
 
-    private Path getShortCut(Path asset) {
-        String fileName = asset.toString();
-        Pattern pattern = Pattern.compile("^[A-Za-z]+");
-        Matcher matcher = pattern.matcher(fileName);
-
-        String shortCut = matcher.find() ? matcher.group().toLowerCase() : "";
-        return Paths.get(shortCut);
-    }
 
     @Override
     public void extract(Path asset) {
@@ -86,8 +77,7 @@ public class LinuxHandler implements PlatformHandler {
     }
 
     @Override
-    public boolean verifyFormat(String fileName) {
-        return fileName.toLowerCase().endsWith(".appimage");
+    public boolean verifyFormat(Path asset) {
+        return asset.toString().toLowerCase().endsWith(".appimage");
     }
-
 }
