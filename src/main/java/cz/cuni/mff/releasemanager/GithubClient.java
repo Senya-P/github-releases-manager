@@ -13,7 +13,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import cz.cuni.mff.releasemanager.types.Asset;
 import cz.cuni.mff.releasemanager.types.Release;
-import cz.cuni.mff.releasemanager.types.Repo;
 import cz.cuni.mff.releasemanager.types.SearchResult;
 
 public class GithubClient {
@@ -34,22 +33,22 @@ public class GithubClient {
         platformHandler = Platform.getPlatformHandler();
     }
 
-    public void searchRepoByName(String name) {
+    public SearchResult searchRepoByName(String name) {
         String url = API_URL + "/search/repositories?q=" + name + "&per_page=" + RESULT_COUNT;
         try {
-            String jsonResponse = request(URI.create(url));
-            // extract list? of owner - repo
-            SearchResult searchResult = getSearchResult(jsonResponse);
-            for (Repo repo : searchResult.items()) {
-                String owner = repo.fullName().split("/")[0];
-                String repoName = repo.fullName().split("/")[1];
-                System.out.println(owner + " " + repoName);
-                getLatestRelease(owner, repoName);
+            var jsonResponse = request(URI.create(url));
+            if (!jsonResponse.isPresent()) {
+                return null;
             }
+            String json = jsonResponse.get();
+            // extract list? of owner - repo
+            SearchResult searchResult = getSearchResult(json);
+            return searchResult;
 
             //Files.write(Paths.get("output-search"), jsonResponse.getBytes(), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
         } catch (IOException | InterruptedException ex) {
             System.out.println(ex.getMessage());
+            return null;
         }
     }
 
@@ -63,10 +62,14 @@ public class GithubClient {
 
         String url = API_URL + "/repos/" + owner + "/" + repo + "/releases/latest";
         try {
-            String jsonResponse = request(URI.create(url));
-            var result = findAppImageAsset(jsonResponse);
+            var jsonResponse = request(URI.create(url));
+            if (!jsonResponse.isPresent()) {
+                return false; // custom exceptions?
+            }
+            String json = jsonResponse.get();
+            var result = findAppImageAsset(json);
             if (!result.isPresent()) {
-                return false;
+                return false; //
             }
             Asset asset = result.get();
             InputStream assetStream = getAsset(asset.url());
@@ -81,18 +84,20 @@ public class GithubClient {
         return true;
     }
 
-    private String request(URI uri) throws IOException, InterruptedException {
+    private Optional<String> request(URI uri) throws IOException, InterruptedException {
         HttpRequest request = HttpRequest.newBuilder()
             .uri(uri)
             .header("Accept", ACCEPT_JSON_HEADER)
             .build();
-        HttpResponse<InputStream> response = client.send(
+        HttpResponse<String> response = client.send(
             request,
-            HttpResponse.BodyHandlers.ofInputStream()
+            HttpResponse.BodyHandlers.ofString()
         );
 
-        handleResponseCode(response);
-        return new String(response.body().readAllBytes());
+        if (handleResponseCode(response)) {
+            return Optional.of(response.body());
+        }
+        return Optional.empty();
     }
 
     InputStream getAsset(String url) throws IOException, InterruptedException {
@@ -109,7 +114,7 @@ public class GithubClient {
         return response.body();
     }
 
-    private boolean handleResponseCode(HttpResponse<InputStream> response) throws IOException {
+    private boolean handleResponseCode(HttpResponse<?> response) {
         int statusCode = response.statusCode();
         if (statusCode >= 400) {
             // switch (statusCode) {
