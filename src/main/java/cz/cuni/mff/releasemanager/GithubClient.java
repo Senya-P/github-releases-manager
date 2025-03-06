@@ -7,12 +7,14 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.file.Path;
+import java.time.Instant;
 import java.util.Optional;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import cz.cuni.mff.releasemanager.types.Asset;
 import cz.cuni.mff.releasemanager.types.Release;
+import cz.cuni.mff.releasemanager.types.ReleaseInfo;
 import cz.cuni.mff.releasemanager.types.SearchResult;
 
 public class GithubClient {
@@ -31,6 +33,7 @@ public class GithubClient {
             .connectTimeout(java.time.Duration.ofSeconds(30))
             .build();
         platformHandler = Platform.getPlatformHandler();
+        //platformHandler.createReleasesListFile();
     }
 
     public SearchResult searchRepoByName(String name) {
@@ -52,13 +55,16 @@ public class GithubClient {
         }
     }
 
-    public boolean getLatestRelease(String owner, String repo) {
-        // get release
-        // determine platform
-        // extract asset id
-        // request asset
-        // download asset
+    public boolean getLatestRelease(String repoFullName) {
+        // check if already installed
+       
         //Files.write(Paths.get("output"), jsonResponse.getBytes(), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+        String[] parts = repoFullName.split("/");
+        if (parts.length != 2) {
+            return false;
+        }
+        String owner = parts[0];
+        String repo = parts[1];
 
         String url = API_URL + "/repos/" + owner + "/" + repo + "/releases/latest";
         try {
@@ -67,15 +73,27 @@ public class GithubClient {
                 return false; // custom exceptions?
             }
             String json = jsonResponse.get();
-            var result = findAppImageAsset(json);
+            var result = findAsset(json);
             if (!result.isPresent()) {
                 return false; //
             }
             Asset asset = result.get();
             InputStream assetStream = getAsset(asset.url());
-            final Path assetPath = platformHandler.saveInputStreamToFile(assetStream, asset.name()); //
-            //platformHandler.verifyFormat(assetPath); //
-            platformHandler.install(assetPath);
+            final Path assetPath = platformHandler.saveInputStreamToFile(assetStream, asset.name()); // extract
+
+            Path installedRelease = platformHandler.install(assetPath);
+            if (installedRelease == null) {
+                return false;
+            }
+
+            ReleaseInfo release = new ReleaseInfo(
+                repoFullName,
+                //"v1.0",
+                Instant.now(),
+                installedRelease.toString(), // accurate?
+                asset
+            );
+            platformHandler.addReleaseToList(release);
         } catch (IOException | InterruptedException ex) {
             System.out.println(ex.getMessage());
             return false;
@@ -100,7 +118,7 @@ public class GithubClient {
         return Optional.empty();
     }
 
-    InputStream getAsset(String url) throws IOException, InterruptedException {
+    private InputStream getAsset(String url) throws IOException, InterruptedException {
         HttpRequest request = HttpRequest.newBuilder()
             .uri(URI.create(url))
             .header("Accept", ACCEPT_STREAM_HEADER)
@@ -130,11 +148,11 @@ public class GithubClient {
         return true;
     }
 
-    private Optional<Asset> findAppImageAsset(String json) throws IOException {
+    private Optional<Asset> findAsset(String json) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
         Release release = mapper.readValue(json, Release.class);
         Optional<Asset> asset = release.assets().stream()
-            .filter(a -> a.name().toLowerCase().contains(".appimage")) // platform-specific
+            .filter(a -> a.name().toLowerCase().contains(platformHandler.getFormat()))
             .findFirst();
         return asset;
     }
