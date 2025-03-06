@@ -5,13 +5,27 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+
+import cz.cuni.mff.releasemanager.types.ReleaseInfo;
+import cz.cuni.mff.releasemanager.types.ReleasesList;
+
 public abstract class PlatformHandler {
-    abstract void install(Path asset);
-    abstract void extract(Path asset);
-    abstract boolean verifyFormat(Path asset);
+    protected static final ObjectMapper mapper = new ObjectMapper()
+        .registerModule(new JavaTimeModule())
+        .enable(SerializationFeature.INDENT_OUTPUT);
+    protected static final String RELEASES_LIST_FILE = "releases.json";
+    abstract Path install(Path asset);
+    abstract void createReleasesListFile();
+    abstract String getFormat();
+    protected abstract Path getReleasesListDirLocation();
 
     protected Path getShortCut(Path asset) {
         String fileName = asset.getFileName().toString();
@@ -56,4 +70,32 @@ public abstract class PlatformHandler {
         }
         return path;
     }
+
+    protected Path getReleasesListFileLocation() {
+        return getReleasesListDirLocation().resolve(RELEASES_LIST_FILE);
+    }
+
+    public void addReleaseToList(ReleaseInfo release) throws IOException {
+        ReleasesList releasesList = loadReleasesList();
+        if (releasesList == null) {
+            createReleasesListFile();
+            releasesList = new ReleasesList(new ArrayList<>());
+        }
+        List<ReleaseInfo> newReleases = new ArrayList<>(releasesList.releases());
+        newReleases.add(release);
+
+        Path releasesFile = getReleasesListFileLocation();
+        mapper.writeValue(releasesFile.toFile(), new ReleasesList(newReleases));
+    }
+
+    public ReleasesList loadReleasesList() throws IOException {
+        Path releasesFile = getReleasesListFileLocation();
+        if (!Files.exists(releasesFile)) {
+            return null;
+        }
+        return mapper.readValue(releasesFile.toFile(), ReleasesList.class);
+    }
+
+    // remove + find?
+
 }
