@@ -5,17 +5,23 @@ import java.nio.file.Path;
 public class MacHandler extends PlatformHandler {
 
     @Override
-    public void install(Path asset) {
+    public Path install(Path asset) {
+        return null;
     }
 
     @Override
-    public void extract(Path asset) {
-        
+    public String getFormat() {
+        return ".dmg";
     }
 
     @Override
-    public boolean verifyFormat(Path asset) {
-        return asset.toString().toLowerCase().endsWith(".dmg");
+    void createReleasesListFile() {
+        throw new UnsupportedOperationException("Unimplemented method 'createConfig'");
+    }
+
+    @Override
+    protected Path getReleasesListDirLocation() {
+        throw new UnsupportedOperationException("Unimplemented method 'getReleasesListLocation'");
     }
 
 }
