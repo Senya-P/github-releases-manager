@@ -69,13 +69,13 @@ public class Platform {
         }
         switch (instance.getOS()) {
             case WINDOWS -> {
-                return new WindowsHandler();
+                return WindowsHandler.getInstance();
             }
             case LINUX -> {
-                return new LinuxHandler();
+                return LinuxHandler.getInstance();
             }
             case MAC -> {
-                return new MacHandler();
+                return MacHandler.getInstance();
             }
             default -> throw new IllegalStateException("Unsupported OS: " + instance.getOS());
         }
