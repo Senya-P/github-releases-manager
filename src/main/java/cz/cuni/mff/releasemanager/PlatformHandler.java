@@ -81,11 +81,21 @@ public abstract class PlatformHandler {
             createReleasesListFile();
             releasesList = new ReleasesList(new ArrayList<>());
         }
-        List<ReleaseInfo> newReleases = new ArrayList<>(releasesList.releases());
-        newReleases.add(release);
+        List<ReleaseInfo> currentReleases = new ArrayList<>(releasesList.releases());
+        boolean found = false;
+        for (int i = 0; i < currentReleases.size(); i++) {
+            if (currentReleases.get(i).repo().equals(release.repo())) {
+                currentReleases.set(i, release);
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            currentReleases.add(release); 
+        }
 
         Path releasesFile = getReleasesListFileLocation();
-        mapper.writeValue(releasesFile.toFile(), new ReleasesList(newReleases));
+        mapper.writeValue(releasesFile.toFile(), new ReleasesList(currentReleases));
     }
 
     public ReleasesList loadReleasesList() throws IOException {
@@ -96,6 +106,10 @@ public abstract class PlatformHandler {
         return mapper.readValue(releasesFile.toFile(), ReleasesList.class);
     }
 
-    // remove + find?
-
+    public boolean uninstall(Path asset) throws IOException {
+        if (Files.isRegularFile(asset)) {
+            return Files.deleteIfExists(asset);
+        }
+        return false;
+    }
 }

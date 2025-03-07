@@ -36,32 +36,27 @@ public class GithubClient {
         //platformHandler.createReleasesListFile();
     }
 
-    public SearchResult searchRepoByName(String name) {
+    public Optional<SearchResult> searchRepoByName(String name) {
         String url = API_URL + "/search/repositories?q=" + name + "&per_page=" + RESULT_COUNT;
         try {
             var jsonResponse = request(URI.create(url));
             if (!jsonResponse.isPresent()) {
-                return null;
+                return Optional.empty();
             }
             String json = jsonResponse.get();
-            // extract list? of owner - repo
             SearchResult searchResult = getSearchResult(json);
-            return searchResult;
+            return Optional.ofNullable(searchResult);
 
-            //Files.write(Paths.get("output-search"), jsonResponse.getBytes(), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
         } catch (IOException | InterruptedException ex) {
             System.out.println(ex.getMessage());
-            return null;
+            return Optional.empty();
         }
     }
 
-    public boolean getLatestRelease(String repoFullName) {
-        // check if already installed
-       
-        //Files.write(Paths.get("output"), jsonResponse.getBytes(), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+    public Optional<Asset> getLatestReleaseAsset(String repoFullName) {
         String[] parts = repoFullName.split("/");
         if (parts.length != 2) {
-            return false;
+            return Optional.empty();
         }
         String owner = parts[0];
         String repo = parts[1];
@@ -70,35 +65,43 @@ public class GithubClient {
         try {
             var jsonResponse = request(URI.create(url));
             if (!jsonResponse.isPresent()) {
-                return false; // custom exceptions?
+                return Optional.empty(); // custom exceptions?
             }
             String json = jsonResponse.get();
-            var result = findAsset(json);
-            if (!result.isPresent()) {
-                return false; //
-            }
-            Asset asset = result.get();
-            InputStream assetStream = getAsset(asset.url());
-            final Path assetPath = platformHandler.saveInputStreamToFile(assetStream, asset.name()); // extract
-
-            Path installedRelease = platformHandler.install(assetPath);
-            if (installedRelease == null) {
-                return false;
-            }
-
-            ReleaseInfo release = new ReleaseInfo(
-                repoFullName,
-                //"v1.0",
-                Instant.now(),
-                installedRelease.toString(), // accurate?
-                asset
-            );
-            platformHandler.addReleaseToList(release);
+            return findAsset(json);
         } catch (IOException | InterruptedException ex) {
             System.out.println(ex.getMessage());
+            return null;
+        }
+    }
+
+    //extract
+    public boolean installAsset(Asset asset, String repoFullName) { // extract adding release info to file
+        InputStream assetStream;
+        try {
+            assetStream = getAsset(asset.url());
+        } catch (IOException | InterruptedException e) {
             return false;
         }
 
+        final Path assetPath = platformHandler.saveInputStreamToFile(assetStream, asset.name());
+        Path installedRelease = platformHandler.install(assetPath);
+        if (installedRelease == null) {
+            return false;
+        }
+
+        ReleaseInfo release = new ReleaseInfo(
+            repoFullName,
+            //"v1.0",
+            Instant.now(),
+            installedRelease.toString(), // accurate?
+            asset
+        );
+        try {
+            platformHandler.addReleaseToList(release);
+        } catch (IOException e) {
+            return false;
+        }
         return true;
     }
 
