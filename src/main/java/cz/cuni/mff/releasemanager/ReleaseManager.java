@@ -19,7 +19,7 @@ public class ReleaseManager {
     private ReleaseManager() {
         cmdParser = new CmdParser();
         githubClient = new GithubClient();
-        platformHandler = Platform.getPlatformHandler(); // two instances! -> singleton?
+        platformHandler = Platform.getPlatformHandler();
     }
 
     public static ReleaseManager getInstance() {
@@ -37,7 +37,7 @@ public class ReleaseManager {
             case INSTALL -> install(command);
             case UPDATE -> update(command);
             case LIST -> list();
-            case HELP -> help();
+            case HELP -> help(command);
         }
     }
 
@@ -68,7 +68,11 @@ public class ReleaseManager {
     }
 
     private void update(Command command) {
-        // update the release
+        // verify installation
+        // retrieve latest release
+        // compare versions ??
+        // install
+        // update releases list
     }
 
     private void list() {
@@ -87,7 +91,10 @@ public class ReleaseManager {
         }
     }
 
-    private void help() {
+    private void help(Command command) {
+        if (command.argument != null) {
+            System.out.println("Unknown command: " + command.argument);
+        }
         System.out.println("Usage: java -jar github-releases-manager.jar [command] [options]");
         System.out.println("Commands:");
         System.out.println("  search [name] - search for a release by name");

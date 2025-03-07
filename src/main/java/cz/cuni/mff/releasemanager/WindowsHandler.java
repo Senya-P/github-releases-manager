@@ -4,6 +4,17 @@ import java.nio.file.Path;
 
 public class WindowsHandler extends PlatformHandler {
 
+    private static WindowsHandler instance;
+
+    private WindowsHandler() {}
+
+    public static WindowsHandler getInstance() {
+        if (instance == null) {
+            instance = new WindowsHandler();
+        }
+        return instance;
+    }
+
     @Override
     public Path install(Path asset) {
         return null;

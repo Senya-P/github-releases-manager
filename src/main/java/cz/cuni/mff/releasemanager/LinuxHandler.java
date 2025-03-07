@@ -10,6 +10,17 @@ import java.util.Set;
 
 public class LinuxHandler extends PlatformHandler {
 
+    private static LinuxHandler instance;
+
+    private LinuxHandler() {}
+
+    public static LinuxHandler getInstance() {
+        if (instance == null) {
+            instance = new LinuxHandler();
+        }
+        return instance;
+    }
+
     @Override
     public Path install(Path assetPath) {
         try {
