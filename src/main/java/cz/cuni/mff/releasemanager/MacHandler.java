@@ -21,6 +21,10 @@ public class MacHandler extends PlatformHandler {
     }
 
     @Override
+    public void uninstall(Path asset) {
+    }
+
+    @Override
     public String getFormat() {
         return ".dmg";
     }

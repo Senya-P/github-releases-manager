@@ -97,12 +97,8 @@ public class ReleaseManager {
                 .filter(release -> release.repo().equals(command.argument))
                 .findFirst()
                 .ifPresentOrElse(release -> {
-                    try {
-                        platformHandler.uninstall(Path.of(release.installPath()));
-                        platformHandler.removeReleaseFromList(release);
-                    } catch (IOException e) {
-                        System.out.println("Failed to uninstall.");
-                    }
+                    platformHandler.uninstall(Path.of(release.installPath()));
+                    platformHandler.removeReleaseFromList(release);
                     System.out.println("Successfully uninstalled.");
                 }, () -> System.out.println("Release " + command.argument + " is not found."));
     }
@@ -139,11 +135,7 @@ public class ReleaseManager {
                         System.out.println("Already up to date.");
                     }
                     else {
-                        try {
-                            platformHandler.uninstall(Path.of(release.installPath()));
-                        } catch (IOException e) {
-                            System.out.println("Failed to uninstall.");
-                        }
+                        platformHandler.uninstall(Path.of(release.installPath()));
                         githubClient.installAsset(asset.get(), command.argument);
                         System.out.println("Successfully updated.");
                     }

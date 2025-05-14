@@ -23,7 +23,9 @@ public abstract class PlatformHandler {
         .registerModule(new JavaTimeModule())
         .enable(SerializationFeature.INDENT_OUTPUT);
     protected static final String RELEASES_LIST_FILE = "releases.json";
+    protected static final String APP_DATA_DIR = "github-release-manager";
     abstract Path install(Path asset);
+    abstract void uninstall(Path asset);
     abstract void createReleasesListFile();
     abstract String getFormat();
     protected abstract Path getReleasesListDirLocation();
@@ -51,7 +53,7 @@ public abstract class PlatformHandler {
             return null;
             // file already exists
         }
-        return destination;
+        return destination.toAbsolutePath();
     }
     // cleanup
     protected void removeTempDir(Path assetPath) {
@@ -106,12 +108,6 @@ public abstract class PlatformHandler {
             return null;
         }
         return mapper.readValue(releasesFile.toFile(), ReleasesList.class);
-    }
-
-    public void uninstall(Path asset) throws IOException {
-        if (Files.isRegularFile(asset)) {
-            Files.deleteIfExists(asset);
-        }
     }
 
     public void removeReleaseFromList(ReleaseInfo release) {

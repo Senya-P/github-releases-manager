@@ -53,6 +53,17 @@ public class LinuxHandler extends PlatformHandler {
     }
 
     @Override
+    public void uninstall(Path asset) {
+        if (Files.isRegularFile(asset)) {
+            try {
+                Files.deleteIfExists(asset);
+            } catch (IOException e) {
+                System.out.println("Failed to uninstall: " + e.getMessage());
+            }
+        }
+    }
+
+    @Override
     public String getFormat() {
         return ".appimage";
     }
@@ -72,13 +83,13 @@ public class LinuxHandler extends PlatformHandler {
                 PosixFilePermission.OWNER_WRITE
             ));
         } catch (IOException e) {
-            System.out.println("Failed to create directory: " + e.getMessage());
+            System.out.println("Failed to create : " + e.getMessage());
         }
     }
 
 
     @Override
     protected Path getReleasesListDirLocation() {
-        return Paths.get(System.getProperty("user.home"), ".local", "share", "github-release-manager");
+        return Paths.get(System.getProperty("user.home"), ".local", "share", APP_DATA_DIR);
     }
 }
