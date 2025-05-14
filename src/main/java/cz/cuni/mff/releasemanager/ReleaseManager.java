@@ -36,6 +36,7 @@ public class ReleaseManager {
         switch (command) {
             case SEARCH -> search(command);
             case INSTALL -> install(command);
+            case UNINSTALL -> uninstall(command);
             case UPDATE -> update(command);
             case LIST -> list();
             case HELP -> help(command);
@@ -74,6 +75,38 @@ public class ReleaseManager {
             System.out.println("Installation failed.");
         }
     }
+
+    private void uninstall(Command command) {
+        if (command.argument.split("/").length != 2) {
+            System.out.println("Please specify the correct repository name of format 'owner/repo'.");
+            return;
+        }
+        ReleasesList releasesList;
+        try {
+            releasesList = platformHandler.loadReleasesList();
+        } catch (IOException e) {
+            System.out.println("Failed to find installed release.");
+            return;
+        }
+        if (releasesList == null) {
+            System.out.println("No releases installed.");
+            return;
+        }
+        List<ReleaseInfo> releases = releasesList.releases();
+        releases.stream()
+                .filter(release -> release.repo().equals(command.argument))
+                .findFirst()
+                .ifPresentOrElse(release -> {
+                    try {
+                        platformHandler.uninstall(Path.of(release.installPath()));
+                        platformHandler.removeReleaseFromList(release);
+                    } catch (IOException e) {
+                        System.out.println("Failed to uninstall.");
+                    }
+                    System.out.println("Successfully uninstalled.");
+                }, () -> System.out.println("Release " + command.argument + " is not found."));
+    }
+
 
     private void update(Command command) {
         // verify installation
@@ -114,7 +147,7 @@ public class ReleaseManager {
                         githubClient.installAsset(asset.get(), command.argument);
                         System.out.println("Successfully updated.");
                     }
-                }, () -> System.out.println("Release " + command.argument + " is not installed."));
+                }, () -> System.out.println("Release " + command.argument + " is not found."));
     }
 
     private void list() {
@@ -143,6 +176,7 @@ public class ReleaseManager {
         System.out.println("Commands:");
         System.out.println("  search [name] - search for a release by name");
         System.out.println("  install [name] - install the latest release by name");
+        System.out.println("  uninstall [name] - uninstall the release by name");
         System.out.println("  update [name] - update the installed release by name");
         System.out.println("  list - list all installed releases");
         System.out.println("  help - display this help message");

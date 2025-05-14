@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -45,9 +46,10 @@ public abstract class PlatformHandler {
         }
         Path destination = dir.resolve(filename);
         try {
-            Files.copy(stream, destination);
+            Files.copy(stream, destination, StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
             return null;
+            // file already exists
         }
         return destination;
     }
@@ -59,7 +61,7 @@ public abstract class PlatformHandler {
                 Files.delete(dir);
             }
         } catch (IOException e) {
-            System.out.println("Failed to remove temporary directory: " + e.getMessage());
+            System.out.println("Failed to remove directory: " + e.getMessage());
         }
     }
 
@@ -106,10 +108,29 @@ public abstract class PlatformHandler {
         return mapper.readValue(releasesFile.toFile(), ReleasesList.class);
     }
 
-    public boolean uninstall(Path asset) throws IOException {
+    public void uninstall(Path asset) throws IOException {
         if (Files.isRegularFile(asset)) {
-            return Files.deleteIfExists(asset);
+            Files.deleteIfExists(asset);
         }
-        return false;
+    }
+
+    public void removeReleaseFromList(ReleaseInfo release) {
+        try {
+            ReleasesList releasesList = loadReleasesList();
+            if (releasesList == null) {
+                return;
+            }
+            List<ReleaseInfo> currentReleases = new ArrayList<>(releasesList.releases());
+            currentReleases.removeIf(r -> r.repo().equals(release.repo()));
+            if (currentReleases.isEmpty()) {
+                Files.deleteIfExists(getReleasesListFileLocation());
+                removeTempDir(getReleasesListFileLocation());
+                return;
+            }
+            Path releasesFile = getReleasesListFileLocation();
+            mapper.writeValue(releasesFile.toFile(), new ReleasesList(currentReleases));
+        } catch (IOException e) {
+            System.out.println("Failed to remove release from list: " + e.getMessage());
+        }
     }
 }

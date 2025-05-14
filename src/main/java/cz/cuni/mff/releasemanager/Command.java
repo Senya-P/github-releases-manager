@@ -7,8 +7,9 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public enum Command {
-    SEARCH("search", 0),
+    SEARCH("search", 1),
     INSTALL("install", 1),
+    UNINSTALL("uninstall", 1),
     UPDATE("update", 1),
     LIST("list", 0),
     HELP("help", 0);
