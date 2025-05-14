@@ -26,7 +26,7 @@ jobs:
           java-version: '21'
 
       - name: Cache Maven Dependencies
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             ~/.m2/repository
@@ -67,9 +67,10 @@ jobs:
 
       - name: Upload Artifacts on Failure
         if: ${{ failure() }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: error-logs-${{ matrix.os }}
           path: |
             target/
-            ~/.your-application-dir/
+            **/surefire-reports/
+            **/failsafe-reports/
