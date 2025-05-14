@@ -1,0 +1,75 @@
+name: Build and Test GitHub Release Manager
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build-and-test:
+    name: Test on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ macos-latest, ubuntu-latest, windows-latest ]
+      fail-fast: false
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set Up Java 21
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Cache Maven Dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.m2/repository
+            target/
+          key: ${{ runner.os }}-maven-${{ hashFiles('pom.xml') }}
+
+      - name: Build with Maven
+        run: mvn clean package
+
+      - name: Verify JAR Creation
+        run: |
+          # Check if JAR exists
+          if [ ! -f "target/github-releases-manager-1.0-SNAPSHOT-jar-with-dependencies.jar" ]; then
+            echo "::error::JAR file not found!"
+            exit 1
+          fi
+          ls -la target/
+
+      - name: Test Installation Command
+        run: |
+          # Windows uses backslashes, others use forward slashes
+          if [[ "${{ runner.os }}" == "Windows" ]]; then
+            java -jar .\target\github-releases-manager-1.0-SNAPSHOT-jar-with-dependencies.jar install keepassxreboot/keepassxc
+          else
+            java -jar ./target/github-releases-manager-1.0-SNAPSHOT-jar-with-dependencies.jar install keepassxreboot/keepassxc
+          fi
+
+      - name: Verify Installation (Ubuntu)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          echo "Ubuntu: Checking installed files..."
+          ls -la ~/.local/share/github-releases-manager
+
+      - name: Verify Installation (MacOS)
+        if: matrix.os == 'macos-latest'
+        run: |
+          echo "TODO Checking installed files..."
+
+      - name: Upload Artifacts on Failure
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: error-logs-${{ matrix.os }}
+          path: |
+            target/
+            ~/.your-application-dir/
