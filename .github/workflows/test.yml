@@ -59,11 +59,11 @@ jobs:
         if: matrix.os == 'macos-latest'
         run: |
           echo "Checking installed files..."
-          ls -la ~/Applications
+          ls -la /Applications
           echo "Checking mount dir..."
-          ls -la ~/Volumes
+          ls -la /Volumes
           echo "Checking config file..."
-          ls -la ~/Library/Application Support
+          ls -la /Library/Application Support
 
 
       - name: Test list (MacOS)
