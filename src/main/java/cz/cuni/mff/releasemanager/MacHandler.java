@@ -35,10 +35,11 @@ public class MacHandler extends PlatformHandler {
                 throw new IOException("Installation failed with exit code: " + exitCode);
             }
             Path appName = getShortCut(asset);
+
             Path targetDir = Paths.get(System.getProperty("user.home"), "Applications");
+            Files.createDirectories(targetDir);
 
             Path app = findAppInMountDir(appName);
-
             Process copyProcess = new ProcessBuilder()
                 .command("cp", "-rf", app.toString(), targetDir.toString())
                 .start();
