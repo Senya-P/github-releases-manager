@@ -47,7 +47,7 @@ public class MacHandler extends PlatformHandler {
                 throw new IOException("Failed to copy application.");
             }
             detach(app);
-            return targetDir.resolve(appName);
+            return targetDir.resolve(app);
         } catch (IOException | InterruptedException e) {
             Thread.currentThread().interrupt();
             System.out.println("Installation error: " + e.getMessage());

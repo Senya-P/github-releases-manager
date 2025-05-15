@@ -38,7 +38,7 @@ jobs:
 
       - name: Verify JAR Creation
         run: |
-          ls -la target/
+          ls target/
 
       - name: Test Installation Command
         run: |
@@ -58,8 +58,13 @@ jobs:
       - name: Verify Installation (MacOS)
         if: matrix.os == 'macos-latest'
         run: |
-          echo "TODO Checking installed files..."
+          echo "Checking installed files..."
           ls -la ~/Applications
+          echo "Checking mount dir..."
+          ls -la ~/Volumes
+          echo "Checking config file..."
+          ls -la ~/Library/Application Support
+
 
       - name: Test list (MacOS)
         if: matrix.os == 'macos-latest'
