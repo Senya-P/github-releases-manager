@@ -39,15 +39,16 @@ public class MacHandler extends PlatformHandler {
             Path targetDir = Paths.get(System.getProperty("user.home"), "Applications");
             Files.createDirectories(targetDir);
 
-            Path app = findAppInMountDir(appName);
-            Process copyProcess = new ProcessBuilder()
-                .command("cp", "-rf", app.toString(), targetDir.toString())
-                .start();
-            if (copyProcess.waitFor() != 0) {
-                throw new IOException("Failed to copy application.");
-            }
-            detach(app);
-            return targetDir.resolve(app);
+            // Path app = findAppInMountDir(appName);
+            // Process copyProcess = new ProcessBuilder()
+            //     .command("cp", "-rf", app.toString(), targetDir.toString())
+            //     .start();
+            // if (copyProcess.waitFor() != 0) {
+            //     throw new IOException("Failed to copy application.");
+            // }
+            //detach(app);
+            //return targetDir.resolve(app);
+            return null;
         } catch (IOException | InterruptedException e) {
             Thread.currentThread().interrupt();
             System.out.println("Installation error: " + e.getMessage());
