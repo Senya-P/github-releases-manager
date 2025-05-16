@@ -139,7 +139,10 @@ public class GithubClient {
         int statusCode = response.statusCode();
         if (statusCode >= 400) {
             switch (statusCode) {
-                case 403 -> handleRateLimit(response.headers());
+                case 403 -> {
+                    handleRateLimit(response.headers());
+                    throw new IOException("Rate limit exceeded. Try again later.");
+                }
                 case 404 -> throw new IOException("Resource not found: " + response.body());
                 default -> throw new IOException("HTTP Error " + statusCode + ": " + response.body());
             }
@@ -150,7 +153,7 @@ public class GithubClient {
         long remaining = headers.firstValueAsLong("X-RateLimit-Remaining").orElse(0);
         long resetTime = headers.firstValueAsLong("X-RateLimit-Reset").orElse(0);
 
-        System.out.printf("Rate limit exceeded! Remaining: %d, Reset: %tT%n",
+        System.out.printf("Rate limit exceeded: Remaining: %d, Reset: %tT%n UTC",
             remaining, new Date(resetTime * 1000));
     }
 
