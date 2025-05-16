@@ -40,7 +40,7 @@ public class MacHandler extends PlatformHandler {
             if (copyProcess.waitFor() != 0) {
                 throw new IOException("Failed to copy application.");
             }
-            detach(app);
+            detach();
                 System.out.println("return: " + targetDir.resolve(app).toString());
             return targetDir.resolve(app);
         } catch (IOException | InterruptedException e) {
@@ -64,9 +64,9 @@ public class MacHandler extends PlatformHandler {
             .orElseThrow(() -> new IOException("Error finding app."));
     }
 
-    private void detach(Path mountPath) throws IOException, InterruptedException {
+    private void detach() throws IOException, InterruptedException {
         Process process = new ProcessBuilder()
-                .command("hdiutil", "detach", mountPath.toString())
+                .command("hdiutil", "detach", MOUNT_DIR.toString(), "-force")
                 .inheritIO()
                 .start();
 
