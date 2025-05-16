@@ -62,18 +62,15 @@ jobs:
           ls -la ~/Library/Application\ Support/
 
 
-      - name: Test list (MacOS)
-        if: matrix.os == 'macos-latest'
+      - name: Test list
         run: |
             java -jar ./target/github-releases-manager-1.0-SNAPSHOT-jar-with-dependencies.jar list
 
-      - name: Test uninstall (MacOS)
-        if: matrix.os == 'macos-latest'
+      - name: Test uninstall
         run: |
             java -jar ./target/github-releases-manager-1.0-SNAPSHOT-jar-with-dependencies.jar uninstall keepassxreboot/keepassxc
 
-      - name: Test list after uninstall (MacOS)
-        if: matrix.os == 'macos-latest'
+      - name: Test list after uninstall
         run: |
             java -jar ./target/github-releases-manager-1.0-SNAPSHOT-jar-with-dependencies.jar list
 
@@ -86,6 +83,12 @@ jobs:
           ls -la ~/Volumes
           echo "Checking config file..."
           ls -la ~/Library/Application\ Support/
+
+      - name: Verify Installation (Ubuntu)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          echo "Ubuntu: Checking installed files..."
+          ls -la ~/.local/bin
 
       - name: Upload Artifacts on Failure
         if: ${{ failure() }}

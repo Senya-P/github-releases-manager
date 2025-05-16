@@ -85,7 +85,7 @@ public class ReleaseManager {
         try {
             releasesList = platformHandler.loadReleasesList();
         } catch (IOException e) {
-            System.out.println("Failed to find installed release: " + e.getMessage());
+            System.out.println("Failed to find installed release.");
             return;
         }
         if (releasesList == null) {
@@ -105,11 +105,6 @@ public class ReleaseManager {
 
 
     private void update(Command command) {
-        // verify installation
-        // retrieve latest release
-        // compare versions ??
-        // install
-        // update releases list
         ReleasesList releasesList;
         try {
             releasesList = platformHandler.loadReleasesList();

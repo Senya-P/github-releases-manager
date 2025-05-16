@@ -24,17 +24,14 @@ public class MacHandler extends PlatformHandler {
 
     @Override
     public Path install(Path asset) {
-        System.out.println("install - asset: " + asset.toString());
         try {
             mount(asset);
 
-            Path appName = getShortCut(asset);
-                System.out.println("appName: " + appName);
             Path targetDir = Paths.get("/Applications");
             Files.createDirectories(targetDir);
 
+            Path appName = getShortCut(asset);
             Path app = findAppInMountDir(appName);
-                System.out.println("app: " + app.toString());
             Process copyProcess = new ProcessBuilder()
                 .command("cp", "-rf", app.toString(), targetDir.toString())
                 .start();
@@ -42,7 +39,6 @@ public class MacHandler extends PlatformHandler {
                 throw new IOException("Failed to copy application.");
             }
             detach();
-                System.out.println("return: " + targetDir.resolve(app.getFileName()).toString());
             return targetDir.resolve(app.getFileName());
         } catch (IOException | InterruptedException e) {
             Thread.currentThread().interrupt();
@@ -63,7 +59,9 @@ public class MacHandler extends PlatformHandler {
                 PosixFilePermission.OTHERS_EXECUTE
         ));
         Process process = new ProcessBuilder()
-                .command("hdiutil", "attach", "-nobrowse", "-verbose", "-mountpoint", MOUNT_DIR.toAbsolutePath().toString(), asset.toString())
+                .command("hdiutil", "attach", "-nobrowse", "-mountpoint",
+                    MOUNT_DIR.toAbsolutePath().toString(), 
+                    asset.toString())
                 .inheritIO()
                 .start();
         int exitCode = process.waitFor();
@@ -76,7 +74,6 @@ public class MacHandler extends PlatformHandler {
         return Files.walk(MOUNT_DIR)
             .filter(path -> {
                 String fileName = path.getFileName().toString();
-                    System.out.println("filename: " + fileName);
                 if (!Files.isDirectory(path)) {
                     return fileName.equalsIgnoreCase(appName.toString());
                 }
@@ -94,7 +91,7 @@ public class MacHandler extends PlatformHandler {
 
         int exitCode = process.waitFor();
         if (exitCode != 0) {
-            throw new IOException("Installation failed with exit code: " + exitCode);
+            throw new IOException("Detaching failed with exit code: " + exitCode);
         }
     }
 
@@ -134,7 +131,6 @@ public class MacHandler extends PlatformHandler {
                 PosixFilePermission.OWNER_READ,
                 PosixFilePermission.OWNER_WRITE
             ));
-            System.out.println("Config: " + releasesFile.toString());
         } catch (IOException e) {
             System.out.println("Failed to create : " + e.getMessage());
         }
