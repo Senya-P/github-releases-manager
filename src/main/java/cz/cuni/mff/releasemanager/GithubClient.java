@@ -32,7 +32,7 @@ public class GithubClient {
             .version(HttpClient.Version.HTTP_2)
             .connectTimeout(java.time.Duration.ofSeconds(30))
             .build();
-        platformHandler = Platform.getPlatformHandler();
+        platformHandler = MacHandler.getInstance(); // TODO: get platform handler from command line args
         //platformHandler.createReleasesListFile();
     }
 
@@ -138,6 +138,7 @@ public class GithubClient {
     private boolean handleResponseCode(HttpResponse<?> response) {
         int statusCode = response.statusCode();
         if (statusCode >= 400) {
+            System.out.println("Http response status code: " + statusCode);
             // switch (statusCode) {
             //     case 401 -> throw new IOException("Unauthorized: " + errorBody);
             //     case 403 -> throw new IOException("Rate limit exceeded: " + errorBody);
