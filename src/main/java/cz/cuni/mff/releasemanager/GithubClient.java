@@ -4,10 +4,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.http.HttpClient;
+import java.net.http.HttpHeaders;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.file.Path;
 import java.time.Instant;
+import java.util.Date;
 import java.util.Optional;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -115,10 +117,8 @@ public class GithubClient {
             HttpResponse.BodyHandlers.ofString()
         );
 
-        if (handleResponseCode(response)) {
-            return Optional.of(response.body());
-        }
-        return Optional.empty();
+        handleResponseCode(response);
+        return Optional.of(response.body());
     }
 
     private InputStream getAsset(String url) throws IOException, InterruptedException {
@@ -135,21 +135,23 @@ public class GithubClient {
         return response.body();
     }
 
-    private boolean handleResponseCode(HttpResponse<?> response) {
+    private void handleResponseCode(HttpResponse<?> response) throws IOException {
         int statusCode = response.statusCode();
         if (statusCode >= 400) {
-            System.out.println("Http response status code: " + statusCode);
-            // switch (statusCode) {
-            //     case 401 -> throw new IOException("Unauthorized: " + errorBody);
-            //     case 403 -> throw new IOException("Rate limit exceeded: " + errorBody);
-            //     case 404 -> throw new IOException("Resource not found: " + errorBody);
-            //     default -> throw new IOException(
-            //         "HTTP Error " + statusCode + ": " + errorBody
-            //     );
-            // }
-            return false;
+            switch (statusCode) {
+                case 403 -> handleRateLimit(response.headers());
+                case 404 -> throw new IOException("Resource not found: " + response.body());
+                default -> throw new IOException("HTTP Error " + statusCode + ": " + response.body());
+            }
         }
-        return true;
+    }
+
+    private void handleRateLimit(HttpHeaders headers) {
+        long remaining = headers.firstValueAsLong("X-RateLimit-Remaining").orElse(0);
+        long resetTime = headers.firstValueAsLong("X-RateLimit-Reset").orElse(0);
+
+        System.out.printf("Rate limit exceeded! Remaining: %d, Reset: %tT%n",
+            remaining, new Date(resetTime * 1000));
     }
 
     private Optional<Asset> findAsset(String json) throws IOException {
