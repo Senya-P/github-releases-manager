@@ -10,6 +10,7 @@ import java.util.Set;
 public class MacHandler extends PlatformHandler {
 
     private static MacHandler instance;
+    // using a mount point under the home directory to avoid permission issues
     private static final Path MOUNT_DIR = Paths.get(System.getProperty("user.home"), "Volumes");
 
     private MacHandler() {}
@@ -41,8 +42,8 @@ public class MacHandler extends PlatformHandler {
                 throw new IOException("Failed to copy application.");
             }
             detach();
-                System.out.println("return: " + targetDir.resolve(app).toString());
-            return targetDir.resolve(app);
+                System.out.println("return: " + targetDir.resolve(app.getFileName()).toString());
+            return targetDir.resolve(app.getFileName());
         } catch (IOException | InterruptedException e) {
             Thread.currentThread().interrupt();
             System.out.println("Installation error: " + e.getMessage());
@@ -108,6 +109,10 @@ public class MacHandler extends PlatformHandler {
         try {
             Files.createDirectories(releasesDir);
             Files.createFile(releasesFile);
+            Files.setPosixFilePermissions(releasesFile, Set.of(
+                PosixFilePermission.OWNER_READ,
+                PosixFilePermission.OWNER_WRITE
+            ));
         } catch (IOException e) {
             System.out.println("Failed to create : " + e.getMessage());
         }
