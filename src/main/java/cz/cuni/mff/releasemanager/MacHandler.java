@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.attribute.PosixFilePermission;
+import java.util.Set;
 
 public class MacHandler extends PlatformHandler {
 
@@ -23,6 +25,17 @@ public class MacHandler extends PlatformHandler {
     public Path install(Path asset) {
         System.out.println("install - asset: " + asset.toString());
         try {
+            Files.createDirectories(MOUNT_DIR);
+            Files.setPosixFilePermissions(MOUNT_DIR, Set.of(
+                PosixFilePermission.OWNER_READ,
+                PosixFilePermission.OWNER_WRITE,
+                PosixFilePermission.OWNER_EXECUTE,
+                PosixFilePermission.GROUP_READ,
+                PosixFilePermission.GROUP_EXECUTE,
+                PosixFilePermission.OTHERS_READ,
+                PosixFilePermission.OTHERS_EXECUTE
+            ));
+
             Process process = new ProcessBuilder()
                 .command("hdiutil", "attach", "-nobrowse", "-verbose", "-mountpoint", MOUNT_DIR.toAbsolutePath().toString(), asset.toString())
                 .inheritIO()
