@@ -153,7 +153,7 @@ public class GithubClient {
         long remaining = headers.firstValueAsLong("X-RateLimit-Remaining").orElse(0);
         long resetTime = headers.firstValueAsLong("X-RateLimit-Reset").orElse(0);
 
-        System.out.printf("Rate limit exceeded: Remaining: %d, Reset: %tT%n UTC%n",
+        System.out.printf("Rate limit exceeded: Remaining: %d, Reset: %tT UTC%n",
             remaining, new Date(resetTime * 1000));
     }
 
