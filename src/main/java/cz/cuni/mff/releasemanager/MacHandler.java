@@ -24,7 +24,7 @@ public class MacHandler extends PlatformHandler {
         System.out.println("install - asset: " + asset.toString());
         try {
             Process process = new ProcessBuilder()
-                .command("hdiutil", "attach", "-nobrowse", asset.toString())
+                .command("hdiutil", "attach", "-nobrowse", "-verbose", MOUNT_DIR.toAbsolutePath().toString(), asset.toString())
                 .inheritIO()
                 .start();
 

@@ -39,6 +39,13 @@ jobs:
       - name: Verify JAR Creation
         run: |
           ls target/
+      - name: Check macOS Architecture
+        if: matrix.os == 'macos-latest'
+        run: |
+          echo "Architecture: $(uname -m)"
+          echo "Xcode Select: $(xcode-select -p)"
+          echo "System Version: $(sw_vers)"
+
 
       - name: Test Installation Command
         run: |
@@ -63,7 +70,7 @@ jobs:
           echo "Checking mount dir..."
           ls -la /Volumes
           echo "Checking config file..."
-          ls -la /Library/Application Support
+          ls -la "/Library/Application Support/"
 
 
       - name: Test list (MacOS)
