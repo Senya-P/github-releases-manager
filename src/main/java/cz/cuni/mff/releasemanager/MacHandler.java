@@ -10,7 +10,7 @@ import java.util.Set;
 public class MacHandler extends PlatformHandler {
 
     private static MacHandler instance;
-    private static final Path MOUNT_DIR = Paths.get("/Volumes", "tmp");
+    private static final Path MOUNT_DIR = Paths.get(System.getProperty("user.home"), "Volumes");
 
     private MacHandler() {}
 
@@ -25,26 +25,8 @@ public class MacHandler extends PlatformHandler {
     public Path install(Path asset) {
         System.out.println("install - asset: " + asset.toString());
         try {
-            Files.createDirectories(MOUNT_DIR);
-            Files.setPosixFilePermissions(MOUNT_DIR, Set.of(
-                PosixFilePermission.OWNER_READ,
-                PosixFilePermission.OWNER_WRITE,
-                PosixFilePermission.OWNER_EXECUTE,
-                PosixFilePermission.GROUP_READ,
-                PosixFilePermission.GROUP_EXECUTE,
-                PosixFilePermission.OTHERS_READ,
-                PosixFilePermission.OTHERS_EXECUTE
-            ));
+            mount(asset);
 
-            Process process = new ProcessBuilder()
-                .command("hdiutil", "attach", "-nobrowse", "-verbose", "-mountpoint", MOUNT_DIR.toAbsolutePath().toString(), asset.toString())
-                .inheritIO()
-                .start();
-
-            int exitCode = process.waitFor();
-            if (exitCode != 0) {
-                throw new IOException("Installation failed with exit code: " + exitCode);
-            }
             Path appName = getShortCut(asset);
                 System.out.println("appName: " + appName);
             Path targetDir = Paths.get("/Applications");
@@ -134,6 +116,27 @@ public class MacHandler extends PlatformHandler {
     @Override
     protected Path getReleasesListDirLocation() {
         return Paths.get("/Library", "Application Support", APP_DATA_DIR);
+    }
+
+    private void mount(Path asset) throws IOException, InterruptedException {
+        Files.createDirectories(MOUNT_DIR);
+        Files.setPosixFilePermissions(MOUNT_DIR, Set.of(
+                PosixFilePermission.OWNER_READ,
+                PosixFilePermission.OWNER_WRITE,
+                PosixFilePermission.OWNER_EXECUTE,
+                PosixFilePermission.GROUP_READ,
+                PosixFilePermission.GROUP_EXECUTE,
+                PosixFilePermission.OTHERS_READ,
+                PosixFilePermission.OTHERS_EXECUTE
+        ));
+        Process process = new ProcessBuilder()
+                .command("hdiutil", "attach", "-nobrowse", "-verbose", "-mountpoint", MOUNT_DIR.toAbsolutePath().toString(), asset.toString())
+                .inheritIO()
+                .start();
+        int exitCode = process.waitFor();
+        if (exitCode != 0) {
+            throw new IOException("Installation failed with exit code: " + exitCode);
+        }
     }
 
 }
