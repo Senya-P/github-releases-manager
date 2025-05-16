@@ -64,7 +64,7 @@ jobs:
           echo "Checking installed files..."
           ls -la /Applications
           echo "Checking mount dir..."
-          ls -la /Volumes
+          ls -la ~/Volumes
           echo "Checking config file..."
           ls -la "/Library/Application Support/"
 
