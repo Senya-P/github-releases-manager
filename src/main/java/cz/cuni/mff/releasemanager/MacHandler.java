@@ -10,7 +10,7 @@ import java.util.Set;
 public class MacHandler extends PlatformHandler {
 
     private static MacHandler instance;
-    private static final Path MOUNT_DIR = Paths.get("/Volumes");
+    private static final Path MOUNT_DIR = Paths.get("/Volumes", "tmp");
 
     private MacHandler() {}
 
