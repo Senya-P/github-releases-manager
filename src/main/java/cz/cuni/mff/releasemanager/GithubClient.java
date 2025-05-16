@@ -32,7 +32,7 @@ public class GithubClient {
             .version(HttpClient.Version.HTTP_2)
             .connectTimeout(java.time.Duration.ofSeconds(30))
             .build();
-        platformHandler = MacHandler.getInstance(); // TODO: get platform handler from command line args
+        platformHandler = Platform.getPlatformHandler();
         //platformHandler.createReleasesListFile();
     }
 
