@@ -39,13 +39,6 @@ jobs:
       - name: Verify JAR Creation
         run: |
           ls target/
-      - name: Check macOS Architecture
-        if: matrix.os == 'macos-latest'
-        run: |
-          echo "Architecture: $(uname -m)"
-          echo "Xcode Select: $(xcode-select -p)"
-          echo "System Version: $(sw_vers)"
-
 
       - name: Test Installation Command
         run: |
@@ -66,7 +59,7 @@ jobs:
           echo "Checking mount dir..."
           ls -la ~/Volumes
           echo "Checking config file..."
-          ls -la "/Library/Application Support/"
+          ls -la "~/Library/Application Support/"
 
 
       - name: Test list (MacOS)
@@ -79,6 +72,20 @@ jobs:
         run: |
             java -jar ./target/github-releases-manager-1.0-SNAPSHOT-jar-with-dependencies.jar uninstall keepassxreboot/keepassxc
 
+      - name: Test list after uninstall (MacOS)
+        if: matrix.os == 'macos-latest'
+        run: |
+            java -jar ./target/github-releases-manager-1.0-SNAPSHOT-jar-with-dependencies.jar list
+
+      - name: Verify post-uninstallation (MacOS)
+        if: matrix.os == 'macos-latest'
+        run: |
+          echo "Checking installed files..."
+          ls -la /Applications
+          echo "Checking mount dir..."
+          ls -la ~/Volumes
+          echo "Checking config file..."
+          ls -la "~/Library/Application Support/"
 
       - name: Upload Artifacts on Failure
         if: ${{ failure() }}
