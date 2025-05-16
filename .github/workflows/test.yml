@@ -85,7 +85,7 @@ jobs:
           echo "Checking mount dir..."
           ls -la ~/Volumes
           echo "Checking config file..."
-          ls -la "~/Library/Application Support/"
+          ls -la ~/Library/Application\ Support/
 
       - name: Upload Artifacts on Failure
         if: ${{ failure() }}

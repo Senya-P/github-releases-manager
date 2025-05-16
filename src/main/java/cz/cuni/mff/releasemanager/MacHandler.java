@@ -134,6 +134,7 @@ public class MacHandler extends PlatformHandler {
                 PosixFilePermission.OWNER_READ,
                 PosixFilePermission.OWNER_WRITE
             ));
+            System.out.println("Config: " + releasesFile.toString());
         } catch (IOException e) {
             System.out.println("Failed to create : " + e.getMessage());
         }
