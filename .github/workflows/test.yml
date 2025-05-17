@@ -12,7 +12,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ macos-latest, ubuntu-latest ]
+        os: [ macos-latest, ubuntu-latest, windows-latest ]
       fail-fast: false
 
     steps:
@@ -40,16 +40,25 @@ jobs:
         run: |
           ls target/
 
+      - name: Test Search Command
+        run: |
+          java -jar ./target/github-releases-manager-1.0-SNAPSHOT-jar-with-dependencies.jar search keepass
+
       - name: Test Installation Command
         run: |
           java -jar ./target/github-releases-manager-1.0-SNAPSHOT-jar-with-dependencies.jar install keepassxreboot/keepassxc
 
+      - name: Test Update Command
+        run: |
+          java -jar ./target/github-releases-manager-1.0-SNAPSHOT-jar-with-dependencies.jar update keepassxreboot/keepassxc
 
       - name: Verify Installation (Ubuntu)
         if: matrix.os == 'ubuntu-latest'
         run: |
-          echo "Ubuntu: Checking installed files..."
+          echo "Checking installed files..."
           ls -la ~/.local/bin
+          echo "Checking config file..."
+          ls -la ~/.local/share
 
       - name: Verify Installation (MacOS)
         if: matrix.os == 'macos-latest'
@@ -60,6 +69,17 @@ jobs:
           ls -la ~/Volumes
           echo "Checking config file..."
           ls -la ~/Library/Application\ Support/
+
+      - name: Verify Installation (Windows)
+        if: matrix.os == 'windows-latest'
+        run: |
+          echo "Checking installed files..."
+          dir "$env:PROGRAMFILES"
+          echo "Checking installers dir..."
+          dir "$env:PROGRAMDATA"
+          echo "Checking config file..."
+          dir "$env:APPDATA"
+  
 
 
       - name: Test list
@@ -74,7 +94,7 @@ jobs:
         run: |
             java -jar ./target/github-releases-manager-1.0-SNAPSHOT-jar-with-dependencies.jar list
 
-      - name: Verify post-uninstallation (MacOS)
+      - name: Verify all cleaned up (MacOS)
         if: matrix.os == 'macos-latest'
         run: |
           echo "Checking installed files..."
@@ -84,11 +104,27 @@ jobs:
           echo "Checking config file..."
           ls -la ~/Library/Application\ Support/
 
-      - name: Verify Installation (Ubuntu)
+      - name:  Verify all cleaned up (Ubuntu)
         if: matrix.os == 'ubuntu-latest'
         run: |
           echo "Ubuntu: Checking installed files..."
           ls -la ~/.local/bin
+          echo "Checking config file..."
+          ls -la ~/.local/share
+
+      - name:  Verify all cleaned up (Windows)
+        if: matrix.os == 'windows-latest'
+        run: |
+          echo "Checking installed files..."
+          dir "$env:PROGRAMFILES"
+          echo "Checking installers dir..."
+          dir "$env:PROGRAMDATA"
+          echo "Checking config file..."
+          dir "$env:APPDATA"
+
+      - name: Test Help Command
+        run: |
+          java -jar ./target/github-releases-manager-1.0-SNAPSHOT-jar-with-dependencies.jar help
 
       - name: Upload Artifacts on Failure
         if: ${{ failure() }}
