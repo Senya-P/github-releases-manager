@@ -77,20 +77,20 @@ public class GithubClient {
             return asset;
         } catch (IOException | InterruptedException ex) {
             System.out.println(ex.getMessage());
-            return null;
+            return Optional.empty();
         }
     }
 
-    //extract
-    public Path installAsset(Asset asset) { // extract adding release info to file
+    public Path installAsset(Asset asset) {
         InputStream assetStream;
         try {
             assetStream = getAsset(asset.url());
         } catch (IOException | InterruptedException e) {
+            System.out.println("Error retrieving asset: " + e.getMessage());
             return null;
         }
 
-        final Path assetPath = platformHandler.saveInputStreamToFile(assetStream, asset.name());
+        final Path assetPath = FileUtils.saveInputStreamToFile(assetStream, asset.name());
         return platformHandler.install(assetPath);
     }
 

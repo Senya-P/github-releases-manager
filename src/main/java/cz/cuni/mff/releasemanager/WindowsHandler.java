@@ -57,7 +57,7 @@ public class WindowsHandler extends PlatformHandler {
         Files.createDirectories(targetDir);
         Path target = targetDir.resolve(assetPath.getFileName());
         Files.move(assetPath, target, StandardCopyOption.REPLACE_EXISTING);
-        removeTempDir(assetPath);
+        FileUtils.removeTempDir(assetPath);
 
         Path shortCut = getShortCut(assetPath);
         System.out.println("Installed to: " + Paths.get(System.getenv("ProgramFiles"), shortCut.toString()).toString());
@@ -77,7 +77,7 @@ public class WindowsHandler extends PlatformHandler {
         }
 
         Files.deleteIfExists(assetPath);
-        removeTempDir(assetPath);
+        FileUtils.removeTempDir(assetPath);
         System.out.println("Installed to: " + targetDir.toString());
 
         Path uninstallPath = findUninstallPath(targetDir);
@@ -137,7 +137,7 @@ public class WindowsHandler extends PlatformHandler {
             throw new IOException("Uninstallation failed with exit code: " + exitCode);
         }
         Files.deleteIfExists(asset);
-        removeTempDir(asset);
+        FileUtils.removeTempDir(asset);
     }
 
     @Override

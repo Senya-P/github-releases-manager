@@ -1,11 +1,9 @@
 package cz.cuni.mff.releasemanager;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -38,41 +36,7 @@ public abstract class PlatformHandler {
         String shortCut = matcher.find() ? matcher.group().toLowerCase() : "";
         return Paths.get(shortCut);
     }
-    // refactor - extract 
-    public Path saveInputStreamToFile(InputStream stream, String filename) {
-        Path dir;
-        try {
-            dir = createDirectory("releases");
-        } catch (IOException ex) {
-            return null;
-        }
-        Path destination = dir.resolve(filename);
-        try {
-            Files.copy(stream, destination, StandardCopyOption.REPLACE_EXISTING);
-        } catch (IOException e) {
-            return null;
-        }
-        return destination.toAbsolutePath();
-    }
-    // cleanup
-    protected void removeTempDir(Path assetPath) {
-        try {
-            Path dir = assetPath.getParent();
-            if (Files.isDirectory(dir) && Files.list(dir).findAny().isEmpty()) {
-                Files.delete(dir);
-            }
-        } catch (IOException e) {
-            System.out.println("Failed to remove directory: " + e.getMessage());
-        }
-    }
 
-    protected Path createDirectory(String directoryName) throws IOException {
-        Path path = Paths.get(directoryName);
-        if (!Files.exists(path)) {
-            Files.createDirectories(path);
-        }
-        return path;
-    }
 
     protected Path getReleasesListFileLocation() {
         return getReleasesListDirLocation().resolve(RELEASES_LIST_FILE);
@@ -119,7 +83,7 @@ public abstract class PlatformHandler {
             currentReleases.removeIf(r -> r.repo().equals(release.repo()));
             if (currentReleases.isEmpty()) {
                 Files.deleteIfExists(getReleasesListFileLocation());
-                removeTempDir(getReleasesListFileLocation());
+                FileUtils.removeTempDir(getReleasesListFileLocation());
                 return;
             }
             Path releasesFile = getReleasesListFileLocation();

@@ -43,7 +43,7 @@ public class LinuxHandler extends PlatformHandler {
             // system-wide? -> sudo
             // entry in PATH
             System.out.println("Installed to: " + target);
-            removeTempDir(assetPath);
+            FileUtils.removeTempDir(assetPath);
             return target;
 
         } catch (IOException e) {
