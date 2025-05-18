@@ -66,7 +66,7 @@ public class GithubClient {
         String url = API_URL + "/repos/" + owner + "/" + repo + "/releases/latest";
         try {
             var jsonResponse = request(URI.create(url));
-            if (!jsonResponse.isPresent()) {
+            if (jsonResponse.isEmpty()) {
                 return Optional.empty(); // custom exceptions?
             }
             String json = jsonResponse.get();
@@ -96,7 +96,7 @@ public class GithubClient {
             repoFullName,
             //"v1.0",
             Instant.now(),
-            installedRelease.toString(), // accurate?
+            installedRelease.toString(),
             asset
         );
         try {
@@ -160,9 +160,16 @@ public class GithubClient {
     private Optional<Asset> findAsset(String json) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
         Release release = mapper.readValue(json, Release.class);
-        Optional<Asset> asset = release.assets().stream()
-            .filter(a -> a.name().toLowerCase().contains(platformHandler.getFormat()))
-            .findFirst();
+        String[] formats = platformHandler.getFormats();
+        Optional<Asset> asset = Optional.empty();
+        for (String format : formats) {
+            asset = release.assets().stream()
+                .filter(a -> a.name().toLowerCase().contains(format))
+                .findFirst();
+            if (asset.isPresent()) {
+                return asset;
+            }
+        }
         return asset;
     }
 
