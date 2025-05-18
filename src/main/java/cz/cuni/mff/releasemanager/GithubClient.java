@@ -9,7 +9,6 @@ import java.net.http.HttpHeaders;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.file.Path;
-import java.time.Instant;
 import java.util.Date;
 import java.util.Optional;
 
@@ -17,7 +16,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import cz.cuni.mff.releasemanager.types.Asset;
 import cz.cuni.mff.releasemanager.types.Release;
-import cz.cuni.mff.releasemanager.types.ReleaseInfo;
 import cz.cuni.mff.releasemanager.types.SearchResult;
 
 public class GithubClient {
@@ -36,7 +34,6 @@ public class GithubClient {
             .connectTimeout(java.time.Duration.ofSeconds(30))
             .build();
         platformHandler = Platform.getPlatformHandler();
-        //platformHandler.createReleasesListFile();
     }
 
     public Optional<SearchResult> searchRepoByName(String name) {
@@ -85,33 +82,16 @@ public class GithubClient {
     }
 
     //extract
-    public boolean installAsset(Asset asset, String repoFullName) { // extract adding release info to file
+    public Path installAsset(Asset asset) { // extract adding release info to file
         InputStream assetStream;
         try {
             assetStream = getAsset(asset.url());
         } catch (IOException | InterruptedException e) {
-            return false;
+            return null;
         }
 
         final Path assetPath = platformHandler.saveInputStreamToFile(assetStream, asset.name());
-        Path installedRelease = platformHandler.install(assetPath);
-        if (installedRelease == null) {
-            return false;
-        }
-
-        ReleaseInfo release = new ReleaseInfo(
-            repoFullName,
-            //"v1.0",
-            Instant.now(),
-            installedRelease.toString(),
-            asset
-        );
-        try {
-            platformHandler.addReleaseToList(release);
-        } catch (IOException e) {
-            return false;
-        }
-        return true;
+        return platformHandler.install(assetPath);
     }
 
     private Optional<String> request(URI uri) throws IOException, InterruptedException {

@@ -2,7 +2,9 @@ package cz.cuni.mff.releasemanager;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 
 import cz.cuni.mff.releasemanager.types.Asset;
 import cz.cuni.mff.releasemanager.types.ReleaseInfo;
@@ -44,7 +46,6 @@ public class ReleaseManager {
     }
 
     private void search(Command command) {
-        // search for the release
         var searchResult = githubClient.searchRepoByName(command.argument);
         if (searchResult.isEmpty() || searchResult.get().items().isEmpty()) {
             System.out.println("No results found.");
@@ -69,10 +70,27 @@ public class ReleaseManager {
             return;
         }
         Asset asset = result.get();
-        if (githubClient.installAsset(asset, command.argument)) {
+        Path installedAsset = githubClient.installAsset(asset);
+        if (installedAsset != null) {
             System.out.println("Installation successful.");
+            addReleaseToList(command.argument, installedAsset, asset);
         } else {
             System.out.println("Installation failed.");
+        }
+    }
+
+    private void addReleaseToList(String repoFullName, Path installedRelease, Asset asset) {
+        ReleaseInfo release = new ReleaseInfo(
+            repoFullName,
+            Instant.now(),
+            installedRelease.toString(),
+            asset
+        );
+        try {
+            platformHandler.addReleaseToList(release);
+        }
+        catch (IOException e) {
+            System.out.println("Failed to add release to list: " + e.getMessage());
         }
     }
 
@@ -121,8 +139,8 @@ public class ReleaseManager {
                 .filter(release -> release.repo().equals(command.argument))
                 .findFirst()
                 .ifPresentOrElse(release -> {
-                    var asset = githubClient.getLatestReleaseAsset(command.argument);
-                    if (!asset.isPresent()) {
+                    Optional<Asset> asset = githubClient.getLatestReleaseAsset(command.argument);
+                    if (asset.isEmpty()) {
                         System.out.println("No asset found.");
                         return;
                     }
@@ -130,9 +148,15 @@ public class ReleaseManager {
                         System.out.println("Already up to date.");
                     }
                     else {
+                        Asset updatedAsset = asset.get();
                         platformHandler.uninstall(Path.of(release.uninstallPath()));
-                        githubClient.installAsset(asset.get(), command.argument);
-                        System.out.println("Successfully updated.");
+                        Path installedAsset = githubClient.installAsset(updatedAsset);
+                        if (installedAsset != null) {
+                            System.out.println("Successfully updated.");
+                            addReleaseToList(command.argument, installedAsset, updatedAsset);
+                        } else {
+                            System.out.println("Installation failed.");
+                        }
                     }
                 }, () -> System.out.println("Release " + command.argument + " is not found."));
     }
