@@ -27,7 +27,7 @@ public abstract class PlatformHandler {
     abstract Path install(Path asset);
     abstract void uninstall(Path asset);
     abstract void createReleasesListFile();
-    abstract String getFormat();
+    abstract String[] getFormats();
     protected abstract Path getReleasesListDirLocation();
 
     protected Path getShortCut(Path asset) {
@@ -51,7 +51,6 @@ public abstract class PlatformHandler {
             Files.copy(stream, destination, StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
             return null;
-            // file already exists
         }
         return destination.toAbsolutePath();
     }

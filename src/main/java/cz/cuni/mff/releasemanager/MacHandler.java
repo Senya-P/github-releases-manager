@@ -113,8 +113,8 @@ public class MacHandler extends PlatformHandler {
     }
 
     @Override
-    public String getFormat() {
-        return ".dmg";
+    public String[] getFormats() {
+        return new String[] { ".dmg" };
     }
 
     @Override

@@ -74,8 +74,8 @@ public class WindowsHandler extends PlatformHandler {
     }
 
     @Override
-    public String getFormat() {
-        return ".msi";
+    public String[] getFormats() {
+        return new String[] {".msi", ".exe"};
     }
 
     @Override

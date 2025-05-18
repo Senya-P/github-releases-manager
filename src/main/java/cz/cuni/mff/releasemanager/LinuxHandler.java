@@ -64,8 +64,8 @@ public class LinuxHandler extends PlatformHandler {
     }
 
     @Override
-    public String getFormat() {
-        return ".appimage";
+    public String[] getFormats() {
+        return new String[] { ".appimage" };
     }
 
     @Override
