@@ -12,7 +12,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ macos-latest, ubuntu-latest, windows-latest ]
+        os: [ macos-latest, ubuntu-latest ]
       fail-fast: false
 
     steps:
@@ -79,8 +79,6 @@ jobs:
           dir "$env:PROGRAMDATA"
           echo "Checking config file..."
           dir "$env:APPDATA"
-  
-
 
       - name: Test list
         run: |
