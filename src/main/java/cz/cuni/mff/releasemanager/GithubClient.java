@@ -67,10 +67,16 @@ public class GithubClient {
         try {
             var jsonResponse = request(URI.create(url));
             if (jsonResponse.isEmpty()) {
+                System.out.println("No releases found for this repository.");
                 return Optional.empty(); // custom exceptions?
             }
             String json = jsonResponse.get();
-            return findAsset(json);
+            Optional<Asset> asset = findAsset(json);
+            if (asset.isEmpty()) {
+                System.out.println("No suitable asset found for this repository.");
+                return Optional.empty();
+            }
+            return asset;
         } catch (IOException | InterruptedException ex) {
             System.out.println(ex.getMessage());
             return null;
