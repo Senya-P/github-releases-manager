@@ -97,7 +97,7 @@ public class ReleaseManager {
                 .filter(release -> release.repo().equals(command.argument))
                 .findFirst()
                 .ifPresentOrElse(release -> {
-                    platformHandler.uninstall(Path.of(release.installPath()));
+                    platformHandler.uninstall(Path.of(release.uninstallPath()));
                     platformHandler.removeReleaseFromList(release);
                     System.out.println("Successfully uninstalled.");
                 }, () -> System.out.println("Release " + command.argument + " is not found."));
@@ -130,7 +130,7 @@ public class ReleaseManager {
                         System.out.println("Already up to date.");
                     }
                     else {
-                        platformHandler.uninstall(Path.of(release.installPath()));
+                        platformHandler.uninstall(Path.of(release.uninstallPath()));
                         githubClient.installAsset(asset.get(), command.argument);
                         System.out.println("Successfully updated.");
                     }

@@ -8,7 +8,7 @@ public record ReleaseInfo(
     String repo,
     //String version,
     @JsonProperty("installed_at") Instant installedAt,
-    @JsonProperty("install_path") String installPath,
+    @JsonProperty("uninstall_path") String uninstallPath,
     Asset asset
     //List<String> dependencies
 ) {}
