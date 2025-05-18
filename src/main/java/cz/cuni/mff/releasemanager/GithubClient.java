@@ -2,6 +2,7 @@ package cz.cuni.mff.releasemanager;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.ConnectException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpHeaders;
@@ -118,11 +119,15 @@ public class GithubClient {
             .uri(uri)
             .header("Accept", ACCEPT_JSON_HEADER)
             .build();
-        HttpResponse<String> response = client.send(
-            request,
-            HttpResponse.BodyHandlers.ofString()
-        );
-
+        HttpResponse<String> response;
+        try {
+            response = client.send(
+                request,
+                HttpResponse.BodyHandlers.ofString()
+            );
+        } catch (ConnectException e) {
+            throw new IOException("Connection error.", e);
+        }
         handleResponseCode(response);
         return Optional.of(response.body());
     }
@@ -132,11 +137,15 @@ public class GithubClient {
             .uri(URI.create(url))
             .header("Accept", ACCEPT_STREAM_HEADER)
             .build();
-        HttpResponse<InputStream> response = client.send(
-            request,
-            HttpResponse.BodyHandlers.ofInputStream()
-        );
-
+        HttpResponse<InputStream> response;
+        try {
+            response = client.send(
+                request,
+                HttpResponse.BodyHandlers.ofInputStream()
+            );
+        } catch (ConnectException e) {
+            throw new IOException("Connection error.", e);
+        }
         handleResponseCode(response);
         return response.body();
     }
