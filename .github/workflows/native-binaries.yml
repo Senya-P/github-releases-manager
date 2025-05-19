@@ -29,7 +29,7 @@ jobs:
         run: |
           jpackage \
             --input target \
-            --name "GitHub Releases Manager" \
+            --name "github-releases-manager" \
             --main-jar github-releases-manager-1.0-SNAPSHOT-jar-with-dependencies.jar \
             --main-class cz.cuni.mff.releasemanager.Main \
             --type app-image \
@@ -65,17 +65,23 @@ jobs:
         run: |
           jpackage ^
             --input target ^
-            --name "GitHub Releases Manager" ^
+            --name "github-releases-manager" ^
             --main-jar github-releases-manager-1.0-SNAPSHOT-jar-with-dependencies.jar ^
             --main-class cz.cuni.mff.releasemanager.Main ^
             --type msi ^
             --dest output ^
+            --runtime-image "%JAVA_HOME%" ^
             --app-version %GITHUB_REF_NAME:v=%
 
       - uses: actions/upload-artifact@v4
         with:
           name: github-releases-manager-windows
           path: output/*.msi
+
+      - name: Smoke test installer file
+        run: |
+          msiexec /a output\github-releases-manager-1.0.0.msi /qn /log install-test.log
+        shell: cmd
 
   build-macos:
     runs-on: macos-latest
@@ -95,7 +101,7 @@ jobs:
         run: |
           jpackage \
             --input target \
-            --name "GitHub Releases Manager" \
+            --name "github-releases-manager" \
             --main-jar github-releases-manager-1.0-SNAPSHOT-jar-with-dependencies.jar \
             --main-class cz.cuni.mff.releasemanager.Main \
             --type dmg \
