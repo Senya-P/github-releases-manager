@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.util.List;
-import java.util.Optional;
 
 import cz.cuni.mff.releasemanager.types.Asset;
 import cz.cuni.mff.releasemanager.types.ReleaseInfo;
@@ -64,12 +63,12 @@ public class ReleaseManager {
             System.out.println("Please specify the correct repository name of format 'owner/repo'.");
             return;
         }
-        var result = githubClient.getLatestReleaseAsset(command.argument);
+        var result = githubClient.getLatestReleaseAssets(command.argument);
         if (result == null || result.isEmpty()) {
             System.out.println("Failed to retrieve the latest release.");
             return;
         }
-        Asset asset = result.get();
+        Asset asset = getSingleAsset(result);
         Path installedAsset = githubClient.installAsset(asset);
         if (installedAsset != null) {
             System.out.println("Installation successful.");
@@ -77,6 +76,27 @@ public class ReleaseManager {
         } else {
             System.out.println("Installation failed.");
         }
+    }
+
+    private Asset getSingleAsset(List<Asset> assets) {
+        if (assets.size() == 1) {
+            return assets.get(0);
+        }
+        System.out.println("Multiple assets found. Please select one:");
+        for (int i = 0; i < assets.size(); i++) {
+            System.out.println((i + 1) + ": " + assets.get(i).name());
+        }
+        int choice = getChoice(1, assets.size());
+        return assets.get(choice - 1);
+    }
+
+    private int getChoice(int min, int max) {
+        int input = cmdParser.getUserInput();
+        if (input < min || input > max) {
+            System.out.println("Invalid choice. Valid options are: " + min + " - " + max);
+            return getChoice(min, max);
+        }
+        return input;
     }
 
     private void addReleaseToList(String repoFullName, Path installedRelease, Asset asset) {
@@ -139,21 +159,30 @@ public class ReleaseManager {
                 .filter(release -> release.repo().equals(command.argument))
                 .findFirst()
                 .ifPresentOrElse(release -> {
-                    Optional<Asset> asset = githubClient.getLatestReleaseAsset(command.argument);
-                    if (asset.isEmpty()) {
+                    List<Asset> assets = githubClient.getLatestReleaseAssets(command.argument);
+                    if (assets.isEmpty()) {
                         System.out.println("No asset found.");
                         return;
                     }
-                    if (release.asset().url().equals(asset.get().url())) {
+                    Asset newAsset = null;
+                    for (Asset asset : assets) {
+                        if (asset.name().equals(release.asset().name())) {
+                            newAsset = asset;
+                            break;
+                        }
+                    }
+                    if (newAsset == null) {
+                        newAsset = getSingleAsset(assets);
+                    }
+                    if (release.asset().url().equals(newAsset.url())) {
                         System.out.println("Already up to date.");
                     }
                     else {
-                        Asset updatedAsset = asset.get();
                         platformHandler.uninstall(Path.of(release.uninstallPath()));
-                        Path installedAsset = githubClient.installAsset(updatedAsset);
+                        Path installedAsset = githubClient.installAsset(newAsset);
                         if (installedAsset != null) {
                             System.out.println("Successfully updated.");
-                            addReleaseToList(command.argument, installedAsset, updatedAsset);
+                            addReleaseToList(command.argument, installedAsset, newAsset);
                         } else {
                             System.out.println("Installation failed.");
                         }

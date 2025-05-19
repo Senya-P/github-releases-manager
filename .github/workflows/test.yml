@@ -46,7 +46,7 @@ jobs:
 
       - name: Test Installation Command
         run: |
-          java -jar ./target/github-releases-manager-1.0-SNAPSHOT-jar-with-dependencies.jar install keepassxreboot/keepassxc
+          echo 1 | java -jar ./target/github-releases-manager-1.0-SNAPSHOT-jar-with-dependencies.jar install keepassxreboot/keepassxc
 
       - name: Test Update Command
         run: |

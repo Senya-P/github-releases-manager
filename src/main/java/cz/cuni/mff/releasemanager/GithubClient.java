@@ -9,7 +9,9 @@ import java.net.http.HttpHeaders;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -53,10 +55,10 @@ public class GithubClient {
         }
     }
 
-    public Optional<Asset> getLatestReleaseAsset(String repoFullName) {
+    public List<Asset> getLatestReleaseAssets(String repoFullName) {
         String[] parts = repoFullName.split("/");
         if (parts.length != 2) {
-            return Optional.empty();
+            return List.of();
         }
         String owner = parts[0];
         String repo = parts[1];
@@ -66,18 +68,17 @@ public class GithubClient {
             var jsonResponse = request(URI.create(url));
             if (jsonResponse.isEmpty()) {
                 System.out.println("No releases found for this repository.");
-                return Optional.empty(); // custom exceptions?
+                return List.of();
             }
             String json = jsonResponse.get();
-            Optional<Asset> asset = findAsset(json);
-            if (asset.isEmpty()) {
+            List<Asset> assets = findAssets(json);
+            if (assets.isEmpty()) {
                 System.out.println("No suitable asset found for this repository.");
-                return Optional.empty();
             }
-            return asset;
+            return assets;
         } catch (IOException | InterruptedException ex) {
             System.out.println(ex.getMessage());
-            return Optional.empty();
+            return List.of();
         }
     }
 
@@ -152,20 +153,19 @@ public class GithubClient {
             remaining, new Date(resetTime * 1000));
     }
 
-    private Optional<Asset> findAsset(String json) throws IOException {
+    private List<Asset> findAssets(String json) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
         Release release = mapper.readValue(json, Release.class);
         String[] formats = platformHandler.getFormats();
-        Optional<Asset> asset = Optional.empty();
+        // add platform check
+        List<Asset> assets = new ArrayList<>();
         for (String format : formats) {
-            asset = release.assets().stream()
+            assets.addAll(release.assets().stream()
                 .filter(a -> a.name().toLowerCase().contains(format))
-                .findFirst();
-            if (asset.isPresent()) {
-                return asset;
-            }
+                .toList()
+            );
         }
-        return asset;
+        return assets;
     }
 
     private SearchResult getSearchResult(String json) throws IOException {
