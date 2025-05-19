@@ -86,7 +86,10 @@ jobs:
 
       - name: Smoke test installer file
         run: |
-          msiexec /a "%GITHUB_WORKSPACE%\output\github-releases-manager-1.0.0.msi" /qn /log install-test.log
+          for %%f in ("%GITHUB_WORKSPACE%\output\*.msi") do (
+          echo Installing %%f
+          msiexec /a "%%f" /qn /log install-test.log
+          )
         shell: cmd
 
   build-macos:
