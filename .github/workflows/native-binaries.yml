@@ -1,0 +1,119 @@
+name: Build Native Installers
+
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Build with Maven
+        run: mvn clean package
+
+      - name: Install AppImage tooling
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y fakeroot libfuse2
+
+      - name: Build AppImage using jpackage
+        run: |
+          jpackage \
+            --input target \
+            --name "GitHub Releases Manager" \
+            --main-jar github-releases-manager-1.0-SNAPSHOT-jar-with-dependencies.jar \
+            --main-class cz.cuni.mff.releasemanager.Main \
+            --type app-image \
+            --dest output \
+
+      - name: Compress AppImage
+        run: |
+          cd output
+          tar -czvf github-releases-manager-linux.tar.gz "GitHub Releases Manager"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: github-releases-manager-linux
+          path: output/github-releases-manager-linux.tar.gz
+
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Build with Maven
+        run: mvn clean package
+
+      - name: Build MSI installer
+        run: |
+          jpackage ^
+            --input target ^
+            --name "GitHub Releases Manager" ^
+            --main-jar github-releases-manager-1.0-SNAPSHOT-jar-with-dependencies.jar ^
+            --main-class cz.cuni.mff.releasemanager.Main ^
+            --type msi ^
+            --dest output ^
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: github-releases-manager-windows
+          path: output/*.msi
+
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Build with Maven
+        run: mvn clean package
+
+      - name: Build DMG installer
+        run: |
+          jpackage \
+            --input target \
+            --name "GitHub Releases Manager" \
+            --main-jar github-releases-manager-1.0-SNAPSHOT-jar-with-dependencies.jar \
+            --main-class cz.cuni.mff.releasemanager.Main \
+            --type dmg \
+            --dest output \
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: github-releases-manager-macos
+          path: output/*.dmg
+
+  release:
+    needs: [build-linux, build-windows, build-macos]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+
+      - name: Publish to GitHub Releases
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/**/*.*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
