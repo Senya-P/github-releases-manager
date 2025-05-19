@@ -2,7 +2,8 @@ name: Build Native Installers
 
 on:
   push:
-    branches: [ master ]
+    tags:
+      - 'v*'
 
 jobs:
   build-linux:
@@ -33,6 +34,7 @@ jobs:
             --main-class cz.cuni.mff.releasemanager.Main \
             --type app-image \
             --dest output \
+            --app-version "${GITHUB_REF_NAME#v}"
 
       - name: Compress AppImage
         run: |
@@ -67,7 +69,8 @@ jobs:
             --main-jar github-releases-manager-1.0-SNAPSHOT-jar-with-dependencies.jar ^
             --main-class cz.cuni.mff.releasemanager.Main ^
             --type msi ^
-            --dest output
+            --dest output ^
+            --app-version %GITHUB_REF_NAME:v=%
 
       - uses: actions/upload-artifact@v4
         with:
@@ -97,6 +100,7 @@ jobs:
             --main-class cz.cuni.mff.releasemanager.Main \
             --type dmg \
             --dest output \
+            --app-version "${GITHUB_REF_NAME#v}"
 
       - uses: actions/upload-artifact@v4
         with:
