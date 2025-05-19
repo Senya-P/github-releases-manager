@@ -59,6 +59,7 @@ jobs:
         run: mvn clean package
 
       - name: Build MSI installer
+        shell: cmd
         run: |
           jpackage ^
             --input target ^
@@ -66,7 +67,7 @@ jobs:
             --main-jar github-releases-manager-1.0-SNAPSHOT-jar-with-dependencies.jar ^
             --main-class cz.cuni.mff.releasemanager.Main ^
             --type msi ^
-            --dest output ^
+            --dest output
 
       - uses: actions/upload-artifact@v4
         with:
