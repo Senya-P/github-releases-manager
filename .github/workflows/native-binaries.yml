@@ -34,12 +34,13 @@ jobs:
             --main-class cz.cuni.mff.releasemanager.Main \
             --type app-image \
             --dest output \
-            --app-version "${GITHUB_REF_NAME#v}"
+            --app-version "${GITHUB_REF_NAME#v}" \
+            --verbose
 
       - name: Compress AppImage
         run: |
           cd output
-          tar -czvf github-releases-manager-linux.tar.gz "GitHub Releases Manager"
+          tar -czvf github-releases-manager-linux.tar.gz "github-releases-manager"
 
       - uses: actions/upload-artifact@v4
         with:
@@ -71,16 +72,21 @@ jobs:
             --type msi ^
             --dest output ^
             --runtime-image "%JAVA_HOME%" ^
-            --app-version %GITHUB_REF_NAME:v=%
+            --app-version %GITHUB_REF_NAME:v=% ^
+            --verbose
 
       - uses: actions/upload-artifact@v4
         with:
           name: github-releases-manager-windows
           path: output/*.msi
 
+      - name: Check installer contents
+        run: |
+          dir output
+
       - name: Smoke test installer file
         run: |
-          msiexec /a output\github-releases-manager-1.0.0.msi /qn /log install-test.log
+          msiexec /a "%GITHUB_WORKSPACE%\output\github-releases-manager-1.0.0.msi" /qn /log install-test.log
         shell: cmd
 
   build-macos:
@@ -106,7 +112,8 @@ jobs:
             --main-class cz.cuni.mff.releasemanager.Main \
             --type dmg \
             --dest output \
-            --app-version "${GITHUB_REF_NAME#v}"
+            --app-version "${GITHUB_REF_NAME#v}" \
+            --verbose
 
       - uses: actions/upload-artifact@v4
         with:
