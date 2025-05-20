@@ -42,15 +42,15 @@ jobs:
 
       - name: Test Search Command
         run: |
-          java -jar ./target/github-releases-manager-1.0-SNAPSHOT-jar-with-dependencies.jar search keepass
+          java -jar ./target/github-releases-manager-1.0-jar-with-dependencies.jar search keepass
 
       - name: Test Installation Command
         run: |
-          echo 1 | java -jar ./target/github-releases-manager-1.0-SNAPSHOT-jar-with-dependencies.jar install keepassxreboot/keepassxc
+          echo 1 | java -jar ./target/github-releases-manager-1.0-jar-with-dependencies.jar install keepassxreboot/keepassxc
 
       - name: Test Update Command
         run: |
-          java -jar ./target/github-releases-manager-1.0-SNAPSHOT-jar-with-dependencies.jar update keepassxreboot/keepassxc
+          java -jar ./target/github-releases-manager-1.0-jar-with-dependencies.jar update keepassxreboot/keepassxc
 
       - name: Verify Installation (Ubuntu)
         if: matrix.os == 'ubuntu-latest'
@@ -82,15 +82,15 @@ jobs:
 
       - name: Test list
         run: |
-            java -jar ./target/github-releases-manager-1.0-SNAPSHOT-jar-with-dependencies.jar list
+            java -jar ./target/github-releases-manager-1.0-jar-with-dependencies.jar list
 
       - name: Test uninstall
         run: |
-            java -jar ./target/github-releases-manager-1.0-SNAPSHOT-jar-with-dependencies.jar uninstall keepassxreboot/keepassxc
+            java -jar ./target/github-releases-manager-1.0-jar-with-dependencies.jar uninstall keepassxreboot/keepassxc
 
       - name: Test list after uninstall
         run: |
-            java -jar ./target/github-releases-manager-1.0-SNAPSHOT-jar-with-dependencies.jar list
+            java -jar ./target/github-releases-manager-1.0-jar-with-dependencies.jar list
 
       - name: Verify all cleaned up (MacOS)
         if: matrix.os == 'macos-latest'
@@ -122,7 +122,7 @@ jobs:
 
       - name: Test Help Command
         run: |
-          java -jar ./target/github-releases-manager-1.0-SNAPSHOT-jar-with-dependencies.jar help
+          java -jar ./target/github-releases-manager-1.0-jar-with-dependencies.jar help
 
       - name: Upload Artifacts on Failure
         if: ${{ failure() }}

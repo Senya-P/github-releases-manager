@@ -30,7 +30,7 @@ jobs:
           jpackage \
             --input target \
             --name "github-releases-manager" \
-            --main-jar github-releases-manager-1.0-SNAPSHOT-jar-with-dependencies.jar \
+            --main-jar github-releases-manager-1.0-jar-with-dependencies.jar \
             --main-class cz.cuni.mff.releasemanager.Main \
             --type app-image \
             --dest output \
@@ -67,7 +67,7 @@ jobs:
           jpackage ^
             --input target ^
             --name "github-releases-manager" ^
-            --main-jar github-releases-manager-1.0-SNAPSHOT-jar-with-dependencies.jar ^
+            --main-jar github-releases-manager-1.0-jar-with-dependencies.jar ^
             --main-class cz.cuni.mff.releasemanager.Main ^
             --type msi ^
             --dest output ^
@@ -111,7 +111,7 @@ jobs:
           jpackage \
             --input target \
             --name "github-releases-manager" \
-            --main-jar github-releases-manager-1.0-SNAPSHOT-jar-with-dependencies.jar \
+            --main-jar github-releases-manager-1.0-jar-with-dependencies.jar \
             --main-class cz.cuni.mff.releasemanager.Main \
             --type dmg \
             --dest output \
