@@ -1,4 +1,4 @@
-package cz.cuni.mff.releasemanager;
+package cz.cuni.mff.releasemanager.cmd;
 
 import java.util.Scanner;
 

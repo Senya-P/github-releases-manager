@@ -16,6 +16,8 @@ import java.util.Optional;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import cz.cuni.mff.releasemanager.platform.Platform;
+import cz.cuni.mff.releasemanager.platform.PlatformHandler;
 import cz.cuni.mff.releasemanager.types.Asset;
 import cz.cuni.mff.releasemanager.types.Release;
 import cz.cuni.mff.releasemanager.types.SearchResult;

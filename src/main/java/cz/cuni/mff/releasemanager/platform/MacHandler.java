@@ -1,4 +1,4 @@
-package cz.cuni.mff.releasemanager;
+package cz.cuni.mff.releasemanager.platform;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -7,10 +7,12 @@ import java.nio.file.Paths;
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.Set;
 
+import cz.cuni.mff.releasemanager.utils.FileUtils;
+
 /**
  * MacHandler is responsible for handling the installation and uninstallation of applications on macOS systems.
  */
-public class MacHandler extends PlatformHandler {
+public final class MacHandler extends PlatformHandler {
 
     private static MacHandler instance;
     // using a mount point under the home directory to avoid permission issues
@@ -142,7 +144,7 @@ public class MacHandler extends PlatformHandler {
     }
 
     @Override
-    void createReleasesListFile() {
+    protected void createReleasesListFile() {
         Path releasesFile = getReleasesListFileLocation();
         Path releasesDir = getReleasesListDirLocation();
         if (Files.exists(releasesFile)) {

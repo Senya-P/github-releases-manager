@@ -1,4 +1,4 @@
-package cz.cuni.mff.releasemanager;
+package cz.cuni.mff.releasemanager.platform;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -6,10 +6,12 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 
+import cz.cuni.mff.releasemanager.FileUtils;
+
 /**
  * WindowsHandler is responsible for handling the installation and uninstallation of applications on Windows systems.
  */
-public class WindowsHandler extends PlatformHandler {
+public final class WindowsHandler extends PlatformHandler {
 
     private static WindowsHandler instance;
 
@@ -185,7 +187,7 @@ public class WindowsHandler extends PlatformHandler {
     }
 
     @Override
-    void createReleasesListFile() {
+    protected void createReleasesListFile() {
         Path releasesFile = getReleasesListFileLocation();
         Path releasesDir = getReleasesListDirLocation();
         if (Files.exists(releasesFile)) {

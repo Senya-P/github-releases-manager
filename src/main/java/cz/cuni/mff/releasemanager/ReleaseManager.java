@@ -5,6 +5,10 @@ import java.nio.file.Path;
 import java.time.Instant;
 import java.util.List;
 
+import cz.cuni.mff.releasemanager.cmd.CmdParser;
+import cz.cuni.mff.releasemanager.cmd.Command;
+import cz.cuni.mff.releasemanager.platform.Platform;
+import cz.cuni.mff.releasemanager.platform.PlatformHandler;
 import cz.cuni.mff.releasemanager.types.Asset;
 import cz.cuni.mff.releasemanager.types.ReleaseInfo;
 import cz.cuni.mff.releasemanager.types.ReleasesList;

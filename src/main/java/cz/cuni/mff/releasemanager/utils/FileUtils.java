@@ -1,4 +1,4 @@
-package cz.cuni.mff.releasemanager;
+package cz.cuni.mff.releasemanager.utils;
 
 import java.io.IOException;
 import java.io.InputStream;

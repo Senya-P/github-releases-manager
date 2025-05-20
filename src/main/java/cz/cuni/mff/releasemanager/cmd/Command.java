@@ -1,4 +1,4 @@
-package cz.cuni.mff.releasemanager;
+package cz.cuni.mff.releasemanager.cmd;
 
 import java.util.Arrays;
 import java.util.Map;
@@ -27,6 +27,7 @@ public enum Command {
         this.commandName = command;
         this.argNumber = argNumber;
     }
+
     public final String commandName;
     public String argument;
     public int argNumber;

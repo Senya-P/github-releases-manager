@@ -1,4 +1,4 @@
-package cz.cuni.mff.releasemanager;
+package cz.cuni.mff.releasemanager.platform;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -8,10 +8,12 @@ import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.Set;
 
+import cz.cuni.mff.releasemanager.FileUtils;
+
 /**
  * LinuxHandler is responsible for handling the installation and uninstallation of applications on Linux systems.
  */
-public class LinuxHandler extends PlatformHandler {
+public final class LinuxHandler extends PlatformHandler {
 
     private static LinuxHandler instance;
 
@@ -75,7 +77,7 @@ public class LinuxHandler extends PlatformHandler {
 
 
     @Override
-    void createReleasesListFile() {
+    protected void createReleasesListFile() {
         Path releasesFile = getReleasesListFileLocation();
         Path releasesDir = getReleasesListDirLocation();
         if (Files.exists(releasesFile)) {

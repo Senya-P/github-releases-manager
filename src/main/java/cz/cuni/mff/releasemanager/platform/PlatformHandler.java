@@ -1,4 +1,4 @@
-package cz.cuni.mff.releasemanager;
+package cz.cuni.mff.releasemanager.platform;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
+import cz.cuni.mff.releasemanager.FileUtils;
 import cz.cuni.mff.releasemanager.types.ReleaseInfo;
 import cz.cuni.mff.releasemanager.types.ReleasesList;
 
@@ -33,15 +34,15 @@ public abstract class PlatformHandler {
      * Uninstalls the asset.
      * @param asset Path to the asset to uninstall.
      */
-    abstract void uninstall(Path asset);
+    public abstract void uninstall(Path asset);
     /**
      * Creates the config file with information about installed releases.
      */
-    abstract void createReleasesListFile();
+    protected abstract void createReleasesListFile();
     /**
      * @return Supported file formats for installation.
      */
-    abstract String[] getFormats();
+    public abstract String[] getFormats();
     /**
      * @return Path to the directory where the config file is stored.
      */

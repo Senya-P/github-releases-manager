@@ -1,9 +1,9 @@
-package cz.cuni.mff.releasemanager;
+package cz.cuni.mff.releasemanager.platform;
 
 /**
  * This class is used to detect the current operating system and architecture.
  */
-public class Platform {
+public final class Platform {
     /**
      * Enum representing the supported operating systems.
      */
