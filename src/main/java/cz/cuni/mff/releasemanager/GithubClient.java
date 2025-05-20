@@ -21,6 +21,7 @@ import cz.cuni.mff.releasemanager.platform.PlatformHandler;
 import cz.cuni.mff.releasemanager.types.Asset;
 import cz.cuni.mff.releasemanager.types.Release;
 import cz.cuni.mff.releasemanager.types.SearchResult;
+import cz.cuni.mff.releasemanager.utils.FileUtils;
 
 /**
  * This class is responsible for interacting with the Github API.
