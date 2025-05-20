@@ -71,14 +71,6 @@
                     <overview>${project.basedir}/src/main/javadoc/overview.html</overview>
                     <show>private</show>
                 </configuration>
-                <executions>
-                    <execution>
-                    <id>attach-javadocs</id>
-                    <goals>
-                        <goal>jar</goal>
-                    </goals>
-                    </execution>
-                </executions>
             </plugin>
         </plugins>
     </build>
