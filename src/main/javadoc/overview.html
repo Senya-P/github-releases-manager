@@ -5,6 +5,40 @@
 </head>
 <body>
     <h1>Github Releases Manager</h1>
-    <p>This is the API documentation for Github Releases Manager.</p>
+
+    <p>The <strong>GitHub Releases Manager</strong> is a command-line tool that allows developers
+    to search for, install, uninstall and update GitHub releases across different platforms.</p>
+
+    <h2>Overview</h2>
+    <p>
+        This tool provides an abstraction over the GitHub API and platform-specific installation logic
+        to simplify retrieving GitHub releases.
+    </p>
+
+    <h2>Terminology</h2>
+    <ul>
+        <li><strong>Release:</strong> A versioned snapshot of a software in a GitHub repository, typically containing compiled binaries.</li>
+        <li><strong>Asset:</strong> A downloadable file associated with a release, such as a binary or installer.</li>
+        <li><strong>Repository:</strong> A GitHub repository that may contain published releases.</li>
+        <li><strong>Platform:</strong> The operating system where the asset will be installed.</li>
+    </ul>
+
+    <h2>Core Functionality</h2>
+    <ul>
+        <li><strong>Search:</strong> Find public repositories by name.</li>
+        <li><strong>Install:</strong> Download and install the suitable asset of the latest release from a given repository.</li>
+        <li><strong>Uninstall:</strong> Remove an installed asset.</li>
+        <li><strong>Update:</strong> Update an installed asset to the latest version.</li>
+        <li><strong>List:</strong> Show all currently installed assets.</li>
+        <li><strong>Help:</strong> Display usage instructions.</li>
+    </ul>
+
+    <h2>Architecture</h2>
+    <p>
+        The entry point is the <code>Main</code> class, which creates an instace of <code>ReleaseManager</code>, 
+        which coordinates command parsing via <code>CmdParser</code>, GitHub API interaction via <code>GithubClient</code>, 
+        and platform-specific behaviors via the <code>PlatformHandler</code>.
+    </p>
+
 </body>
 </html>
