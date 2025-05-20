@@ -8,7 +8,7 @@ import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.Set;
 
-import cz.cuni.mff.releasemanager.FileUtils;
+import cz.cuni.mff.releasemanager.utils.FileUtils;
 
 /**
  * LinuxHandler is responsible for handling the installation and uninstallation of applications on Linux systems.

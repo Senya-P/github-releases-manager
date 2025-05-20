@@ -10,9 +10,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
-import cz.cuni.mff.releasemanager.FileUtils;
 import cz.cuni.mff.releasemanager.types.ReleaseInfo;
 import cz.cuni.mff.releasemanager.types.ReleasesList;
+import cz.cuni.mff.releasemanager.utils.FileUtils;
 
 /**
  * Abstract class for handling platform-specific operations.

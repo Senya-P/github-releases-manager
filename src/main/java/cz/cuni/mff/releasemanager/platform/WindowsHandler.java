@@ -6,7 +6,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 
-import cz.cuni.mff.releasemanager.FileUtils;
+import cz.cuni.mff.releasemanager.utils.FileUtils;
 
 /**
  * WindowsHandler is responsible for handling the installation and uninstallation of applications on Windows systems.
