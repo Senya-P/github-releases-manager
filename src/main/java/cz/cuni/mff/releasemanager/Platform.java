@@ -11,6 +11,8 @@ public class Platform {
         WINDOWS, LINUX, MAC
     }
     /**
+     * ARCHITECTURE CHECK IS NOT YET SUPPORTED
+     * 
      * Enum representing the supported architectures.
      */
     public enum Architecture {
@@ -45,6 +47,8 @@ public class Platform {
     }
 
     /**
+     * ARCHITECTURE CHECK IS NOT YET SUPPORTED
+     * 
      * Detects the current architecture.
      * @return the detected architecture
      */
@@ -73,6 +77,8 @@ public class Platform {
     }
 
     /**
+     * ARCHITECTURE CHECK IS NOT YET SUPPORTED
+     * 
      * Returns the current architecture.
      * @return the architecture
      */
