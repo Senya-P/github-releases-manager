@@ -1,10 +1,18 @@
 package cz.cuni.mff.releasemanager;
 
+/**
+ * This class is used to detect the current operating system and architecture.
+ */
 public class Platform {
+    /**
+     * Enum representing the supported operating systems.
+     */
     public enum OS {
         WINDOWS, LINUX, MAC
     }
-
+    /**
+     * Enum representing the supported architectures.
+     */
     public enum Architecture {
         X86_32, X86_64, ARM_32, ARM_64
     }
@@ -19,6 +27,10 @@ public class Platform {
         this.arch = detectArch();
     }
 
+    /**
+     * Detects the current operating system.
+     * @return the detected OS
+     */
     private static OS detectOS() {
         final String os = System.getProperty("os.name").toLowerCase();
         if (os.contains("win")) {
@@ -32,6 +44,10 @@ public class Platform {
         }
     }
 
+    /**
+     * Detects the current architecture.
+     * @return the detected architecture
+     */
     private static Architecture detectArch() {
         final String architecture = System.getProperty("os.arch").toLowerCase();
         if (architecture.contains("x86_64") || architecture.contains("amd64")) {
@@ -48,14 +64,26 @@ public class Platform {
         }
     }
 
+    /**
+     * Returns the current operating system.
+     * @return the OS
+     */
     public OS getOS() {
         return this.os;
     }
 
+    /**
+     * Returns the current architecture.
+     * @return the architecture
+     */
     public Architecture getArchitecture() {
         return this.arch;
     }
 
+    /**
+     * Returns the singleton instance of the Platform class.
+     * @return the singleton instance
+     */
     public static Platform detectPlatform() {
         if (instance == null) {
             instance = new Platform();
@@ -63,6 +91,10 @@ public class Platform {
         return instance;
     }
 
+    /**
+     * Returns the appropriate PlatformHandler based on the current OS.
+     * @return the PlatformHandler for the current OS
+     */
     public static PlatformHandler getPlatformHandler() {
         if (instance == null) {
             instance = new Platform();

@@ -3,14 +3,20 @@ package cz.cuni.mff.releasemanager;
 import java.util.Arrays;
 import java.util.Scanner;
 
-
+/**
+ * Command line parser for the application.
+ * This class is responsible for parsing command line arguments and user input.
+ */
 public class CmdParser {
 
     private final Scanner scanner = new Scanner(System.in);
 
-    public CmdParser() {
-    }
-
+    /**
+     * Parses the command line arguments and returns the corresponding Command.
+     *
+     * @param args command line arguments
+     * @return the parsed Command
+     */
     public Command parse(String[] args) {
         Command defaultCommand = Command.HELP;
         defaultCommand.argument = Arrays.toString(args);
@@ -22,6 +28,11 @@ public class CmdParser {
         return command;
     }
 
+    /**
+     * Prompts the user for input and returns the input as an integer.
+     * This method handles invalid input by recursively calling itself until an integer is entered.
+     * @return the user input as an integer
+     */
     public int getUserInput() {
         try {
             String input = scanner.nextLine();

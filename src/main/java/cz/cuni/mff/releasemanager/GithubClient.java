@@ -20,6 +20,11 @@ import cz.cuni.mff.releasemanager.types.Asset;
 import cz.cuni.mff.releasemanager.types.Release;
 import cz.cuni.mff.releasemanager.types.SearchResult;
 
+/**
+ * This class is responsible for interacting with the Github API.
+ * It provides methods to search for repositories, get the latest release assets,
+ * and install those assets.
+ */
 public class GithubClient {
 
     private static final String API_URL = "https://api.github.com";
@@ -29,6 +34,10 @@ public class GithubClient {
     private final HttpClient client;
     private final PlatformHandler platformHandler;
 
+    /**
+     * Constructor for GithubClient.
+     * Initializes the HttpClient and PlatformHandler.
+     */
     public GithubClient() {
         client = HttpClient.newBuilder()
             .followRedirects(HttpClient.Redirect.ALWAYS)
@@ -38,6 +47,11 @@ public class GithubClient {
         platformHandler = Platform.getPlatformHandler();
     }
 
+    /**
+     * Searches for repositories by name using the Github API.
+     * @param name The name of the repository to search for.
+     * @return An Optional containing the SearchResult if found, otherwise empty.
+     */
     public Optional<SearchResult> searchRepoByName(String name) {
         String url = API_URL + "/search/repositories?q=" + name + "&per_page=" + RESULT_COUNT;
         try {
@@ -55,6 +69,11 @@ public class GithubClient {
         }
     }
 
+    /**
+     * Retrieves the list of latest release assets for a given repository.
+     * @param repoFullName The full name of the repository (owner/repo).
+     * @return A list of Asset objects.
+     */
     public List<Asset> getLatestReleaseAssets(String repoFullName) {
         String[] parts = repoFullName.split("/");
         if (parts.length != 2) {
@@ -82,6 +101,11 @@ public class GithubClient {
         }
     }
 
+    /**
+     * Installs the asset by downloading it and passing it to the platform handler for installation.
+     * @param asset The asset to install.
+     * @return The path to the file for uninstall.
+     */
     public Path installAsset(Asset asset) {
         InputStream assetStream;
         try {
@@ -95,6 +119,13 @@ public class GithubClient {
         return platformHandler.install(assetPath);
     }
 
+    /**
+     * Requests the given URI and returns the response body as a string.
+     * @param uri The URI to request.
+     * @return Optional containing the response body as a string.
+     * @throws IOException
+     * @throws InterruptedException
+     */
     private Optional<String> request(URI uri) throws IOException, InterruptedException {
         HttpRequest request = HttpRequest.newBuilder()
             .uri(uri)
@@ -113,6 +144,13 @@ public class GithubClient {
         return Optional.of(response.body());
     }
 
+    /**
+     * Retrieves the asset from the given URL and returns it as an InputStream.
+     * @param url The URL of the asset.
+     * @return InputStream of the asset.
+     * @throws IOException
+     * @throws InterruptedException
+     */
     private InputStream getAsset(String url) throws IOException, InterruptedException {
         HttpRequest request = HttpRequest.newBuilder()
             .uri(URI.create(url))
@@ -131,6 +169,11 @@ public class GithubClient {
         return response.body();
     }
 
+    /**
+     * Handles the response code from the HTTP request. Used for logging.
+     * @param response The HTTP response.
+     * @throws IOException
+     */
     private void handleResponseCode(HttpResponse<?> response) throws IOException {
         int statusCode = response.statusCode();
         if (statusCode >= 400) {
@@ -145,6 +188,10 @@ public class GithubClient {
         }
     }
 
+    /**
+     * Handles the rate limit response from the Github API. Used for logging.
+     * @param headers The HTTP headers from the response.
+     */
     private void handleRateLimit(HttpHeaders headers) {
         long remaining = headers.firstValueAsLong("X-RateLimit-Remaining").orElse(0);
         long resetTime = headers.firstValueAsLong("X-RateLimit-Reset").orElse(0);
@@ -153,6 +200,12 @@ public class GithubClient {
             remaining, new Date(resetTime * 1000));
     }
 
+    /**
+     * Finds suitable assets in the JSON response from the Github API.
+     * @param json The JSON response.
+     * @return A list of Asset objects.
+     * @throws IOException
+     */
     private List<Asset> findAssets(String json) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
         Release release = mapper.readValue(json, Release.class);
@@ -168,6 +221,12 @@ public class GithubClient {
         return assets;
     }
 
+    /**
+     * Converts the JSON string to a SearchResult object.
+     * @param json The JSON string.
+     * @return The SearchResult object.
+     * @throws IOException
+     */
     private SearchResult getSearchResult(String json) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
         return mapper.readValue(json, SearchResult.class);

@@ -8,12 +8,18 @@ import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.Set;
 
+/**
+ * LinuxHandler is responsible for handling the installation and uninstallation of applications on Linux systems.
+ */
 public class LinuxHandler extends PlatformHandler {
 
     private static LinuxHandler instance;
 
     private LinuxHandler() {}
 
+    /**
+     * @return  Singleton instance of LinuxHandler.
+     */
     public static LinuxHandler getInstance() {
         if (instance == null) {
             instance = new LinuxHandler();
@@ -34,14 +40,13 @@ public class LinuxHandler extends PlatformHandler {
                 PosixFilePermission.OTHERS_EXECUTE
             ));
 
-            // install for user
             Path targetDir = Paths.get(System.getProperty("user.home"), ".local/bin");
             Files.createDirectories(targetDir);
-            Path shortCut = getShortCut(assetPath);
+
+            String shortCut = FileUtils.getShortCut(assetPath);
             Path target = targetDir.resolve(shortCut);
+
             Files.move(assetPath, target, StandardCopyOption.REPLACE_EXISTING);
-            // system-wide? -> sudo
-            // entry in PATH
             System.out.println("Installed to: " + target);
             FileUtils.removeTempDir(assetPath);
             return target;
@@ -67,6 +72,7 @@ public class LinuxHandler extends PlatformHandler {
     public String[] getFormats() {
         return new String[] { ".appimage" };
     }
+
 
     @Override
     void createReleasesListFile() {

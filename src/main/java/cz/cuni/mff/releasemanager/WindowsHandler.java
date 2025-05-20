@@ -6,6 +6,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 
+/**
+ * WindowsHandler is responsible for handling the installation and uninstallation of applications on Windows systems.
+ */
 public class WindowsHandler extends PlatformHandler {
 
     private static WindowsHandler instance;
@@ -17,6 +20,9 @@ public class WindowsHandler extends PlatformHandler {
 
     private WindowsHandler() {}
 
+    /**
+     * @return  Singleton instance of WindowsHandler.
+     */
     public static WindowsHandler getInstance() {
         if (instance == null) {
             instance = new WindowsHandler();
@@ -42,6 +48,14 @@ public class WindowsHandler extends PlatformHandler {
             return null;
         }
     }
+
+    /**
+     * Installs the MSI asset.
+     * @param assetPath Path to the asset to install.
+     * @return Path to the installed application which is then used for uninstallation.
+     * @throws IOException
+     * @throws InterruptedException
+     */
     private Path installMsi(Path assetPath) throws IOException, InterruptedException {
         Process process = new ProcessBuilder()
             .command("msiexec", "/i", assetPath.toString())
@@ -59,14 +73,21 @@ public class WindowsHandler extends PlatformHandler {
         Files.move(assetPath, target, StandardCopyOption.REPLACE_EXISTING);
         FileUtils.removeTempDir(assetPath);
 
-        Path shortCut = getShortCut(assetPath);
-        System.out.println("Installed to: " + Paths.get(System.getenv("ProgramFiles"), shortCut.toString()).toString());
+        String shortCut = FileUtils.getShortCut(assetPath);
+        System.out.println("Installed to: " + Paths.get(System.getenv("ProgramFiles"), shortCut).toString());
         return target;
     }
 
+    /**
+     * Installs the EXE asset.
+     * @param assetPath Path to the asset to install.
+     * @return Path to the uninstallation file.
+     * @throws IOException
+     * @throws InterruptedException
+     */
     private Path installExe(Path assetPath) throws IOException, InterruptedException {
-        Path shortCut = getShortCut(assetPath);
-        Path targetDir = Paths.get(System.getenv("ProgramFiles"), shortCut.toString());
+        String shortCut = FileUtils.getShortCut(assetPath);
+        Path targetDir = Paths.get(System.getenv("ProgramFiles"), shortCut);
         String command = String.format("\"%s\" /S /D=%s", assetPath.toString(), targetDir.toString());
         Process process = new ProcessBuilder("cmd.exe", "/c", command)
             .inheritIO()
@@ -84,6 +105,12 @@ public class WindowsHandler extends PlatformHandler {
         return uninstallPath;
     }
 
+    /**
+     * Finds the uninstallation file in the target directory.
+     * @param targetDir Path to the target directory.
+     * @return Path to the uninstallation file.
+     * @throws IOException
+     */
     private Path findUninstallPath(Path targetDir) throws IOException {
         return Files.walk(targetDir)
             .filter(path -> {
@@ -115,6 +142,12 @@ public class WindowsHandler extends PlatformHandler {
         }
     }
 
+    /**
+     * Uninstalls the EXE asset.
+     * @param asset Path to the asset to uninstall.
+     * @throws IOException
+     * @throws InterruptedException
+     */
     private void uninstallExe(Path asset) throws IOException, InterruptedException {
         Process process = new ProcessBuilder()
             .command("cmd.exe", "/c", asset.toString(), "/S")
@@ -127,6 +160,12 @@ public class WindowsHandler extends PlatformHandler {
         }
     }
 
+    /**
+     * Uninstalls the MSI asset.
+     * @param asset Path to the asset to uninstall.
+     * @throws IOException
+     * @throws InterruptedException
+     */
     private void uninstallMsi(Path asset) throws IOException, InterruptedException {
         Process process = new ProcessBuilder()
             .command("msiexec", "/x", asset.toString())

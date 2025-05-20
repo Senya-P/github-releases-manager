@@ -7,6 +7,9 @@ import java.nio.file.Paths;
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.Set;
 
+/**
+ * MacHandler is responsible for handling the installation and uninstallation of applications on macOS systems.
+ */
 public class MacHandler extends PlatformHandler {
 
     private static MacHandler instance;
@@ -15,6 +18,9 @@ public class MacHandler extends PlatformHandler {
 
     private MacHandler() {}
 
+    /**
+     * @return  Singleton instance of MacHandler.
+     */
     public static MacHandler getInstance() {
         if (instance == null) {
             instance = new MacHandler();
@@ -30,8 +36,9 @@ public class MacHandler extends PlatformHandler {
             Path targetDir = Paths.get("/Applications");
             Files.createDirectories(targetDir);
 
-            Path appName = getShortCut(asset);
+            String appName = FileUtils.getShortCut(asset);
             Path app = findAppInMountDir(appName);
+
             Process copyProcess = new ProcessBuilder()
                 .command("cp", "-rf", app.toString(), targetDir.toString())
                 .start();
@@ -47,6 +54,12 @@ public class MacHandler extends PlatformHandler {
         }
     }
 
+    /**
+     * Mounts the asset to a mount directory.
+     * @param asset Path to the asset.
+     * @throws IOException
+     * @throws InterruptedException
+     */
     private void mount(Path asset) throws IOException, InterruptedException {
         Files.createDirectories(MOUNT_DIR);
         Files.setPosixFilePermissions(MOUNT_DIR, Set.of(
@@ -70,19 +83,30 @@ public class MacHandler extends PlatformHandler {
         }
     }
 
-    private Path findAppInMountDir(Path appName) throws IOException {
+    /**
+     * Finds the downloaded application in the mount directory.
+     * @param appName Name of the application.
+     * @return Path to the application.
+     * @throws IOException
+     */
+    private Path findAppInMountDir(String appName) throws IOException {
         return Files.walk(MOUNT_DIR)
             .filter(path -> {
                 String fileName = path.getFileName().toString();
                 if (!Files.isDirectory(path)) {
-                    return fileName.equalsIgnoreCase(appName.toString());
+                    return fileName.equalsIgnoreCase(appName);
                 }
-                return fileName.substring(0, fileName.length() - 4).equalsIgnoreCase(appName.toString());
+                return fileName.substring(0, fileName.length() - 4).equalsIgnoreCase(appName);
             })
             .findFirst()
             .orElseThrow(() -> new IOException("Error finding app."));
     }
 
+    /**
+     * Detaches the mounted application.
+     * @throws IOException
+     * @throws InterruptedException
+     */
     private void detach() throws IOException, InterruptedException {
         Process process = new ProcessBuilder()
                 .command("hdiutil", "detach", MOUNT_DIR.toString(), "-force")

@@ -3,11 +3,8 @@ package cz.cuni.mff.releasemanager;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -16,32 +13,54 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import cz.cuni.mff.releasemanager.types.ReleaseInfo;
 import cz.cuni.mff.releasemanager.types.ReleasesList;
 
+/**
+ * Abstract class for handling platform-specific operations.
+ * This class provides methods for installing, uninstalling, and managing the list of installed releases.
+ */
 public abstract class PlatformHandler {
     protected static final ObjectMapper mapper = new ObjectMapper()
         .registerModule(new JavaTimeModule())
         .enable(SerializationFeature.INDENT_OUTPUT);
     protected static final String RELEASES_LIST_FILE = "releases.json";
     protected static final String APP_DATA_DIR = "github-release-manager";
-    abstract Path install(Path asset);
+    /**
+     * * Installs the asset.
+     * @param asset Path to the asset to install.
+     * @return Path to the installed application which is then used for uninstallation.
+     */
+    public abstract Path install(Path asset);
+    /**
+     * Uninstalls the asset.
+     * @param asset Path to the asset to uninstall.
+     */
     abstract void uninstall(Path asset);
+    /**
+     * Creates the config file with information about installed releases.
+     */
     abstract void createReleasesListFile();
+    /**
+     * @return Supported file formats for installation.
+     */
     abstract String[] getFormats();
+    /**
+     * @return Path to the directory where the config file is stored.
+     */
     protected abstract Path getReleasesListDirLocation();
 
-    protected Path getShortCut(Path asset) {
-        String fileName = asset.getFileName().toString();
-        Pattern pattern = Pattern.compile("^[A-Za-z]+");
-        Matcher matcher = pattern.matcher(fileName);
 
-        String shortCut = matcher.find() ? matcher.group().toLowerCase() : "";
-        return Paths.get(shortCut);
-    }
-
-
+    /**
+     * @return Path to the config file with a list of installed releases.
+     */
     protected Path getReleasesListFileLocation() {
         return getReleasesListDirLocation().resolve(RELEASES_LIST_FILE);
     }
 
+    /**
+     * Adds a release to the list of installed releases.
+     * If file does not exist, it creates a new one.
+     * If the release already exists, it updates the existing entry.
+     * @param release ReleaseInfo object containing the information about the release to add.
+     */
     public void addReleaseToList(ReleaseInfo release) throws IOException {
         ReleasesList releasesList = loadReleasesList();
         if (releasesList == null) {
@@ -65,6 +84,11 @@ public abstract class PlatformHandler {
         mapper.writeValue(releasesFile.toFile(), new ReleasesList(currentReleases));
     }
 
+    /**
+     * Loads the list of installed releases from the config file.
+     * @return ReleasesList object containing the list of installed releases.
+     * @throws IOException
+     */
     public ReleasesList loadReleasesList() throws IOException {
         Path releasesFile = getReleasesListFileLocation();
         if (!Files.exists(releasesFile)) {
@@ -73,6 +97,11 @@ public abstract class PlatformHandler {
         return mapper.readValue(releasesFile.toFile(), ReleasesList.class);
     }
 
+    /**
+     * Removes a release from the list of installed releases.
+     * @param release ReleaseInfo object containing the information about the release to remove.
+     * If the list is empty after removal, the file is deleted.
+     */
     public void removeReleaseFromList(ReleaseInfo release) {
         try {
             ReleasesList releasesList = loadReleasesList();

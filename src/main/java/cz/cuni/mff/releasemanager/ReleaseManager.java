@@ -10,9 +10,27 @@ import cz.cuni.mff.releasemanager.types.ReleaseInfo;
 import cz.cuni.mff.releasemanager.types.ReleasesList;
 import cz.cuni.mff.releasemanager.types.Repo;
 
-
+/**
+ * ReleaseManager class manages GitHub release installation, uninstallation,
+ * searching, updating, and listing of installed releases.
+ *
+ * <p>This class provides a command-line interface for interacting with GitHub
+ * repositories and handling platform-specific release installation logic.
+ * It acts as the central coordinator for parsing commands, accessing GitHub APIs,
+ * and manipulating local release data.</p>
+ *
+ * Supported commands include:
+ * <ul>
+ *   <li>search</li>
+ *   <li>install</li>
+ *   <li>uninstall</li>
+ *   <li>update</li>
+ *   <li>list</li>
+ *   <li>help</li>
+ * </ul>
+ */
 public class ReleaseManager {
-    private static ReleaseManager instance; // volitile
+    private static ReleaseManager instance;
 
     private final CmdParser cmdParser;
     private final GithubClient githubClient;
@@ -23,14 +41,20 @@ public class ReleaseManager {
         githubClient = new GithubClient();
         platformHandler = Platform.getPlatformHandler();
     }
-
+    /**
+     * @return the singleton {@code ReleaseManager} instance
+     */
     public static ReleaseManager getInstance() {
         if (instance == null) {
             instance = new ReleaseManager();
         }
         return instance;
     }
-
+    /**
+     * Executes the command based on the provided arguments.
+     *
+     * @param args command-line arguments specifying the command and parameters
+     */
     public void execute(String[] args) {
         Command command = cmdParser.parse(args);
 
@@ -43,7 +67,11 @@ public class ReleaseManager {
             case HELP -> help(command);
         }
     }
-
+    /**
+     * Searches for a GitHub repository by name and prints the results.
+     *
+     * @param command the command containing the search term
+     */
     private void search(Command command) {
         var searchResult = githubClient.searchRepoByName(command.argument);
         if (searchResult.isEmpty() || searchResult.get().items().isEmpty()) {
@@ -57,7 +85,12 @@ public class ReleaseManager {
         }
         System.out.println("To install a release, use the 'install' command followed by the repository name.");
     }
-
+    /**
+     * Installs the latest release of a specified GitHub repository.
+     * If multiple assets are found, the user is prompted to select one.
+     *
+     * @param command the command containing the repository name
+     */
     private void install(Command command) {
         if (command.argument.split("/").length != 2) {
             System.out.println("Please specify the correct repository name of format 'owner/repo'.");
@@ -77,7 +110,12 @@ public class ReleaseManager {
             System.out.println("Installation failed.");
         }
     }
-
+    /**
+     * Prompts the user to choose a single asset from a list of assets.
+     *
+     * @param assets list of available release assets
+     * @return the selected asset
+     */
     private Asset getSingleAsset(List<Asset> assets) {
         if (assets.size() == 1) {
             return assets.get(0);
@@ -89,7 +127,13 @@ public class ReleaseManager {
         int choice = getChoice(1, assets.size());
         return assets.get(choice - 1);
     }
-
+    /**
+     * Prompts the user for a choice between a minimum and maximum integer value.
+     *
+     * @param min the minimum valid choice
+     * @param max the maximum valid choice
+     * @return the user's choice
+     */
     private int getChoice(int min, int max) {
         int input = cmdParser.getUserInput();
         if (input < min || input > max) {
@@ -98,7 +142,13 @@ public class ReleaseManager {
         }
         return input;
     }
-
+    /**
+     * Adds a release to the list of installed releases.
+     *
+     * @param repoFullName the full name of the repository (e.g., "owner/repo")
+     * @param installedRelease the path to the installed asset
+     * @param asset the asset
+     */
     private void addReleaseToList(String repoFullName, Path installedRelease, Asset asset) {
         ReleaseInfo release = new ReleaseInfo(
             repoFullName,
@@ -113,7 +163,11 @@ public class ReleaseManager {
             System.out.println("Failed to add release to list: " + e.getMessage());
         }
     }
-
+    /**
+     * Uninstalls a previously installed release based on the repository name.
+     *
+     * @param command the command containing the repository name
+     */
     private void uninstall(Command command) {
         if (command.argument.split("/").length != 2) {
             System.out.println("Please specify the correct repository name of format 'owner/repo'.");
@@ -141,7 +195,11 @@ public class ReleaseManager {
                 }, () -> System.out.println("Release " + command.argument + " is not found."));
     }
 
-
+    /**
+     * Updates an installed release if a newer version is available.
+     *
+     * @param command the command containing the repository name
+     */
     private void update(Command command) {
         ReleasesList releasesList;
         try {
@@ -190,6 +248,9 @@ public class ReleaseManager {
                 }, () -> System.out.println("Release " + command.argument + " is not found."));
     }
 
+    /**
+     * Lists all installed releases.
+     */
     private void list() {
         ReleasesList releasesList;
         try {
@@ -208,6 +269,11 @@ public class ReleaseManager {
         }
     }
 
+    /**
+     * Prints usage help text or a message for an unknown command.
+     *
+     * @param command the provided command
+     */
     private void help(Command command) {
         if (command.argument != null) {
             System.out.println("Unknown command: " + command.argument);
