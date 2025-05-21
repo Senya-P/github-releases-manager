@@ -10,6 +10,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * @param repo The name of the repository where the release is installed.
  * @param installedAt The timestamp when the release was installed.
  * @param uninstallPath The path to the file for application uninstallation.
+ * @param asset The asset installed.
  */
 public record ReleaseInfo(
     String repo,

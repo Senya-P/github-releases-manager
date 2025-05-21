@@ -1,5 +1,6 @@
 package cz.cuni.mff.releasemanager.cmd;
 
+import java.util.Arrays;
 import java.util.Scanner;
 
 /**
@@ -20,9 +21,11 @@ public class CmdParser {
         Command defaultCommand = Command.HELP;
         defaultCommand.argument = null;
         if (args.length > 1) {
-            defaultCommand.argument =  String.join(" ", args);
+            defaultCommand.argument =  String.join(" ", Arrays.copyOfRange(args, 1, args.length));
         }
-
+        if (args.length == 0) {
+            return defaultCommand;
+        }
         Command command = Command.fromName(args[0]).orElseGet(() -> defaultCommand);
         if (command.requiresArgument()) {
             command.argument = args[1];
