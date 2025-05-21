@@ -49,6 +49,12 @@ Example:
 java -jar target/github-releases-manager-1.0-jar-with-dependencies.jar list
 ```
 
+## Running the tests
+
+```bash
+mvn test
+```
+
 ## Supported commands
 
 | Command                  | Description                                                 |
