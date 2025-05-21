@@ -49,12 +49,6 @@ Example:
 java -jar target/github-releases-manager-1.0-jar-with-dependencies.jar list
 ```
 
-## Running the tests
-
-```bash
-mvn test
-```
-
 ## Supported commands
 
 | Command                  | Description                                                 |
@@ -66,6 +60,12 @@ mvn test
 | `list`                   | List all installed releases                                 |
 | `help`                   | Show usage instructions                                     |
 
+
+## Running the tests
+
+```bash
+mvn test
+```
 
 ## Documentation
 
