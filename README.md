@@ -1,6 +1,6 @@
 # GitHub Releases Manager
 
-A command-line tool for GitHub releases.
+A multi-platform command-line tool for GitHub releases.
 
 ## Features
 
@@ -10,6 +10,8 @@ A command-line tool for GitHub releases.
 - **Uninstall** installed release
 - **List** all installed releases
 - **Help** for usage guidance
+
+Supported formats: exe, msi, dmg, appimage
 
 ---
 
@@ -60,6 +62,11 @@ java -jar target/github-releases-manager-1.0-jar-with-dependencies.jar list
 | `list`                   | List all installed releases                                 |
 | `help`                   | Show usage instructions                                     |
 
+Example repositories:
+
+- keepassxreboot/keepassxc
+- ip7z/7zip
+- obsproject/obs-studio
 
 ## Running the tests
 
